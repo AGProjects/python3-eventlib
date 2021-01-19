@@ -1,23 +1,25 @@
-urllib2 = __import__('urllib2')
-for var in dir(urllib2):
-    exec("%s = urllib2.%s" % (var, var))
+urllib = __import__('urllib.request')
+for var in dir(urllib.request):
+    exec("%s = urllib.request.%s" % (var, var))
 
 # import the following to be a better drop-in replacement
 __import_lst = ['__version__', '__cut_port_re', '_parse_proxy']
 
 for var in __import_lst:
-    exec("%s = getattr(urllib2, %r, None)" % (var, var))
+    exec("%s = getattr(urllib.request, %r, None)" % (var, var))
 
 for x in ('urlopen', 'install_opener', 'build_opener', 'HTTPHandler', 'HTTPSHandler',
           'HTTPCookieProcessor', 'FileHandler', 'FTPHandler', 'CacheFTPHandler', 'GopherError'):
     globals().pop(x, None)
 
-from eventlib.green import httplib
-import mimetools
+import mimetypes
 import os
-from eventlib.green import socket
 import sys
+
+from eventlib.green import httplib
+from eventlib.green import socket
 from eventlib.green import time
+from urllib.error import URLError
 
 try:
     from io import StringIO
@@ -80,7 +82,7 @@ class HTTPHandler(urllib.request.HTTPHandler):
 
     http_request = AbstractHTTPHandler.do_request_
 
-if hasattr(urllib2, 'HTTPSHandler'):
+if hasattr(urllib.request, 'HTTPSHandler'):
     class HTTPSHandler(urllib.request.HTTPSHandler):
 
         def https_open(self, req):
@@ -116,7 +118,7 @@ class FileHandler(urllib.request.FileHandler):
         size = stats.st_size
         modified = email.Utils.formatdate(stats.st_mtime, usegmt=True)
         mtype = mimetypes.guess_type(file)[0]
-        headers = mimetools.Message(StringIO(
+        headers = email.Message(StringIO(
             'Content-type: %s\nContent-length: %d\nLast-modified: %s\n' %
             (mtype or 'text/plain', size, modified)))
         if host:

@@ -1,12 +1,14 @@
 import os
 import sys
 import urllib
+
 from eventlib.green import socket, time
+
 from urllib.error import( __all__ )
 from urllib.response import( __all__ )
 from urllib.robotparser import( __all__ )
-from urllib.request import( __all__, __version__, MAXFTPCACHE, ftpcache, ftpwrapper, _noheaders, noheaders, proxy_bypass )
-from urllib.parse import( __all__,  splithost, splituser, splittype, splitattr, splitpasswd, splitport, splitquery, splitvalue)
+from urllib.request import( __all__, __version__, MAXFTPCACHE, ftpcache, ftpwrapper, _noheaders, noheaders, proxy_bypass, addinfourl, url2pathname, getproxies)
+from urllib.parse import( __all__,  quote, unwrap, unquote, splithost, splituser, splittype, splitattr, splitpasswd, splitport, splitquery, splitvalue)
 from urllib.parse import urljoin as basejoin
 
 parse = urllib.parse.parse_qs
@@ -27,14 +29,17 @@ def urlopen(url, data=None, proxies=None):
         return opener.open(url)
     else:
         return opener.open(url, data)
+
 def urlretrieve(url, filename=None, reporthook=None, data=None):
     global _urlopener
     if not _urlopener:
         _urlopener = FancyURLopener()
     return _urlopener.retrieve(url, filename, reporthook, data)
+
 def urlcleanup():
     if _urlopener:
         _urlopener.cleanup()
+
 
 class URLopener(urllib.request.URLopener):
 
