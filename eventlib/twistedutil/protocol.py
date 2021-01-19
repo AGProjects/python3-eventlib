@@ -29,7 +29,7 @@ from twisted.python import failure
 
 from eventlib import proc
 from eventlib.api import getcurrent
-from eventlib.coros import queue, event
+from eventlib.coros import queue, event, NOT_USED
 
 
 class ValueQueue(queue):
@@ -126,9 +126,11 @@ class GreenTransportBase(object):
             self.pauseProducing()
 
     def write(self, data, wait=True):
+        if not isinstance(data, bytes):
+            data = data.encode()
         if self._disconnected_event.ready():
             raise self._disconnected_event.wait()
-        if wait:
+        if wait: # and self._write_event._result is not NOT_USED:
             self._write_event.reset()
             self.transport.write(data)
             self._write_event.wait()
@@ -240,7 +242,7 @@ class UnbufferedTransport(GreenTransportBase):
 class GreenTransport(GreenTransportBase):
 
     protocol_class = Protocol
-    _buffer = ''
+    _buffer = b'' 
     _error = None
 
     def read(self, size=-1):
@@ -257,7 +259,7 @@ class GreenTransport(GreenTransportBase):
         if size>=0:
             result, self._buffer = self._buffer[:size], self._buffer[size:]
         else:
-            result, self._buffer = self._buffer, ''
+            result, self._buffer = self._buffer, b''
         if not result and self._disconnected_event.has_exception():
             try:
                 self._disconnected_event.wait()
@@ -282,7 +284,7 @@ class GreenTransport(GreenTransportBase):
             finally:
                 self.pauseProducing()
         if buflen is None:
-            result, self._buffer = self._buffer, ''
+            result, self._buffer = self._buffer, b''
         else:
             result, self._buffer = self._buffer[:buflen], self._buffer[buflen:]
         if not result and self._disconnected_event.has_exception():

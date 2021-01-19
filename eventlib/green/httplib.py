@@ -67,7 +67,7 @@ Req-sent-unread-response       _CS_REQ_SENT       <response_class>
 """
 
 import errno
-import mimetools
+from email.message import Message
 from eventlib.green import socket
 from urllib.parse import urlsplit
 
@@ -205,7 +205,7 @@ responses = {
 # maximal amount of data to read at one time in _safe_read
 MAXAMOUNT = 1048576
 
-class HTTPMessage(mimetools.Message):
+class HTTPMessage(Message):
 
     def addheader(self, key, value):
         """Add header for field key handling repeats."""

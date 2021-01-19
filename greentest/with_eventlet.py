@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 # Copyright (c) 2008-2009 AG Projects
 # Author: Denis Bilenko
@@ -71,5 +71,5 @@ if __name__=='__main__':
     if 'twisted.internet.reactor' in sys.modules:
         print('===REACTOR=%r' % sys.modules['twisted.internet.reactor'])
     sys.stdout.flush()
-    exec(compile(open(sys.argv[0], "rb").read(), sys.argv[0], 'exec'))
+    exec(compile(open(sys.argv[0]).read(), sys.argv[0], 'exec'))
 

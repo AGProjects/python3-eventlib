@@ -113,14 +113,14 @@ def tcp_server(listensocket, server, *args, **kw):
     \*\*kw
         The keyword arguments to pass to *server*.
     """
-    print("tcpserver spawning %s on %s" % (server, listensocket.getsockname()))
+    print(("tcpserver spawning %s on %s" % (server, listensocket.getsockname())))
     try:
         try:
             while True:
                 spawn(server, listensocket.accept(), *args, **kw)
         except socket.error as e:
             # Broken pipe means it was shutdown
-            if e[0] != 32:
+            if e.errno != 32:
                 raise
     finally:
         listensocket.close()
@@ -211,7 +211,7 @@ def select(read_list, write_list, error_list, timeout=None):
     if timeout is not None:
         t = hub.schedule_call(timeout, on_timeout)
     try:
-        for k, v in ds.items():
+        for k, v in list(ds.items()):
             d = hub.add_descriptor(k,
                                    v.get('read') is not None and on_read,
                                    v.get('write') is not None and on_write,
@@ -529,7 +529,7 @@ class Spew(object):
                     line = 'Unknown code named [%s].  VM instruction #%d' % (
                         frame.f_code.co_name, frame.f_lasti)
             if self.trace_names is None or name in self.trace_names:
-                print('%s:%s: %s' % (name, lineno, line.rstrip()))
+                print(('%s:%s: %s' % (name, lineno, line.rstrip())))
                 if not self.show_values:
                     return self
                 details = '\t'

@@ -1,14 +1,12 @@
-__socket = __import__('socket')
-for var in __socket.__all__:
-    exec("%s = __socket.%s" % (var, var))
-_fileobject = __socket._fileobject
+import socket as __socket
+from socket import (__all__, error, AF_INET, SOCK_STREAM, SOL_SOCKET, SO_REUSEADDR, getdefaulttimeout, gethostname, getnameinfo, getservbyname, herror, htonl, SOCK_DGRAM, timeout, gaierror, SOCK_RAW, setdefaulttimeout, getservbyport, gethostbyaddr, ntohl, htons, ntohs, getfqdn, SOCK_RDM, SOCK_SEQPACKET)
 
 from eventlib.api import get_hub
 from eventlib.greenio import GreenSocket as socket
 from eventlib.greenio import socketpair, fromfd
+from socket import SocketIO
 
 import warnings
-
 
 def gethostbyname(name):
     if getattr(get_hub(), 'uses_twisted_reactor', None):

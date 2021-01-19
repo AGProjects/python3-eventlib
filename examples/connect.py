@@ -31,18 +31,20 @@ from eventlib.green import socket
 #from twisted.internet import reactor
 
 def geturl(url):
-    c = socket.socket()
+    sock = socket
+    c = sock.socket()
     ip = socket.gethostbyname(url)
-    c.connect((ip, 80))
-    print('%s connected' % url)
-    c.send('GET /\r\n\r\n')
-    return c.recv(1024)
+    #conn = c.connect((ip, 80))
+    #print('%s connected %s' % (url, ip))
+    #sent = c.send('GET /\r\n\r\n')
+    return "#" #c.recv(1024)
 
-urls = ['www.google.com', 'www.yandex.ru', 'www.python.org', 'ag-projects.com', 'sylkserver.com']
+urls = ['www.google.com', 'www.python.org', 'www.yandex.ru'] #, 'ag-projects.com'] #, 'sylkserver.com']
 jobs = [proc.spawn(geturl, x) for x in urls]
 print('spawned %s jobs' % len(jobs))
 
 # collect the results from workers
+print("WAITALL", jobs)
 results = proc.waitall(jobs)
 # Note, that any exception in the workers will be reraised by waitall
 # unless trap_errors argument specifies otherwise

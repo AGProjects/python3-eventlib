@@ -144,8 +144,8 @@ class TestActor(TestCase):
         # yields, eventually all messages are delivered
         msgs = []
         waiters = []
-        def received(xxx_todo_changeme ):
-            (message, evt) = xxx_todo_changeme
+        def received(rcvd):
+            (message, evt) = rcvd
             api.sleep(0)
             msgs.append(message)
             evt.send()
@@ -169,8 +169,8 @@ class TestActor(TestCase):
 
     def test_raising_received(self):
         msgs = []
-        def received(xxx_todo_changeme1 ):
-            (message, evt) = xxx_todo_changeme1
+        def received(rcvd):
+            (message, evt) = rcvd 
             evt.send()
             if message == 'fail':
                 raise RuntimeError()
@@ -190,8 +190,8 @@ class TestActor(TestCase):
     def test_multiple(self):
         self.actor = IncrActor(concurrency=2)
         total = [0]
-        def received(xxx_todo_changeme2 ):
-            (func, ev, value) = xxx_todo_changeme2
+        def received(rcvd):
+            (func, ev, value) = rcvd 
             func()
             total[0] += value
             ev.send()

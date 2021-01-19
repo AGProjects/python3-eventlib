@@ -58,7 +58,7 @@ class TestGreenIo(TestCase):
             client = api.connect_tcp(('127.0.0.1', server.getsockname()[1]))
             fd = client.makeGreenFile()
             client.close()
-            assert fd.readline() == 'hello\n'    
+            assert fd.readline() == b'hello\n'    
             assert fd.read() == ''
             fd.close()
             
@@ -92,7 +92,7 @@ class TestGreenIo(TestCase):
         client = api.connect_tcp(('127.0.0.1', server.getsockname()[1]))
         fd = client.makeGreenFile()
         client.close()
-        assert fd.read() == 'hello\n'    
+        assert fd.read() == b'hello\n'    
         assert fd.read() == ''
         
         timer.cancel()

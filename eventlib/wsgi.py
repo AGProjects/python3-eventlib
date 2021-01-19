@@ -25,6 +25,7 @@ import os
 import sys
 import time
 import traceback
+import urllib.parse as urllib_parse
 from eventlib.green import urllib
 from eventlib.green import socket
 from eventlib.green import BaseHTTPServer
@@ -285,17 +286,17 @@ class HttpProtocol(BaseHTTPServer.BaseHTTPRequestHandler):
             path, query = self.path.split('?', 1)
         else:
             path, query = self.path, ''
-        env['PATH_INFO'] = urllib.parse.unquote(path)
+        env['PATH_INFO'] = urllib_parse.unquote(path)
         env['QUERY_STRING'] = query
 
-        if self.headers.typeheader is None:
-            env['CONTENT_TYPE'] = self.headers.type
+        if self.headers.get('content-type') is None:
+            env['CONTENT_TYPE'] = self.headers.get_content_type()
         else:
-            env['CONTENT_TYPE'] = self.headers.typeheader
-
-        length = self.headers.getheader('content-length')
+            env['CONTENT_TYPE'] = self.headers['content-type']
+        length = self.headers.get('content-length')
         if length:
             env['CONTENT_LENGTH'] = length
+
         env['SERVER_PROTOCOL'] = 'HTTP/1.0'
 
         host, port = self.request.getsockname()
@@ -304,8 +305,8 @@ class HttpProtocol(BaseHTTPServer.BaseHTTPRequestHandler):
         env['REMOTE_ADDR'] = self.client_address[0]
         env['GATEWAY_INTERFACE'] = 'CGI/1.1'
 
-        for h in self.headers.headers:
-            k, v = h.split(':', 1)
+        for k in self.headers:
+            v = self.headers.get(k)
             k = k.replace('-', '_').upper()
             v = v.strip()
             if k in env:
@@ -363,8 +364,8 @@ class Server(BaseHTTPServer.HTTPServer):
             d.update(self.environ)
         return d
 
-    def process_request(self, xxx_todo_changeme):
-        (socket, address) = xxx_todo_changeme
+    def process_request(self, req):
+        (socket, address) = req 
         proto = self.protocol(socket, address, self)
         proto.handle()
 

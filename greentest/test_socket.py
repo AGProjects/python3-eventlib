@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 import unittest
 from greentest import test_support
@@ -15,7 +15,7 @@ import signal
 
 PORT = 50007
 HOST = 'localhost'
-MSG = 'Michael Gilfix was here\n'
+MSG = b'Michael Gilfix was here\n'
 
 class SocketTCPTest(unittest.TestCase):
 
@@ -764,13 +764,13 @@ class FileObjectClassTestCase(SocketConnectedTest):
 
     def testReadlineAfterRead(self):
         a_baloo_is = self.serv_file.read(len("A baloo is"))
-        self.assertEqual("A baloo is", a_baloo_is)
+        self.assertEqual(b"A baloo is", a_baloo_is)
         _a_bear = self.serv_file.read(len(" a bear"))
-        self.assertEqual(" a bear", _a_bear)
+        self.assertEqual(b" a bear", _a_bear)
         line = self.serv_file.readline()
-        self.assertEqual("\n", line)
+        self.assertEqual(b"\n", line)
         line = self.serv_file.readline()
-        self.assertEqual("A BALOO IS A BEAR.\n", line)
+        self.assertEqual(b"A BALOO IS A BEAR.\n", line)
         line = self.serv_file.readline()
         self.assertEqual(MSG, line)
 
@@ -782,9 +782,9 @@ class FileObjectClassTestCase(SocketConnectedTest):
 
     def testReadlineAfterReadNoNewline(self):
         end_of_ = self.serv_file.read(len("End Of "))
-        self.assertEqual("End Of ", end_of_)
+        self.assertEqual(b"End Of ", end_of_)
         line = self.serv_file.readline()
-        self.assertEqual("Line", line)
+        self.assertEqual(b"Line", line)
 
     def _testReadlineAfterReadNoNewline(self):
         self.cli_file.write("End Of Line")
@@ -832,7 +832,7 @@ class SmallBufferedFileObjectClassTestCase(FileObjectClassTestCase):
 
 class Urllib2FileobjectTest(unittest.TestCase):
 
-    # urllib2.HTTPHandler has "borrowed" socket._fileobject, and requires that
+    # urllib2.HTTPHandler has "borrowed" socket.SocketIO, and requires that
     # it close the socket if the close c'tor argument is true
 
     def testClose(self):
@@ -841,16 +841,16 @@ class Urllib2FileobjectTest(unittest.TestCase):
             def flush(self): pass
             def close(self): self.closed = True
 
-        # must not close unless we request it: the original use of _fileobject
+        # must not close unless we request it: the original use of SocketIO
         # by module socket requires that the underlying socket not be closed until
-        # the _socketobject that created the _fileobject is closed
+        # the _socketobject that created the SocketIO is closed
         s = MockSocket()
-        f = socket._fileobject(s)
+        f = socket.SocketIO(s)
         f.close()
         self.assertTrue(not s.closed)
 
         s = MockSocket()
-        f = socket._fileobject(s, close=True)
+        f = socket.SocketIO(s, close=True)
         f.close()
         self.assertTrue(s.closed)
 

@@ -111,8 +111,8 @@ def bind_port(sock, host='', preferred_port=54321):
             if port == 0:
                 port = sock.getsockname()[1]
             return port
-        except socket.error as xxx_todo_changeme:
-            (err, msg) = xxx_todo_changeme.args
+        except socket.error as error:
+            (err, msg) = error.args
             if err != errno.EADDRINUSE:
                 raise
             print('  WARNING: failed to listen on port %d, trying another' % port, file=sys.__stderr__)
@@ -328,6 +328,8 @@ _2G = 2 * _1G
 class _Dummy:
     def __getslice__(self, i, j):
         return j
+    def __getitem__(self, i):
+        return i 
 MAX_Py_ssize_t = _Dummy()[:]
 
 def set_memlimit(limit):

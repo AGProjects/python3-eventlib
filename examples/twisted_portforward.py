@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 # Copyright (c) 2008-2009 AG Projects
 # Author: Denis Bilenko

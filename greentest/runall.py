@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 # Copyright (c) 2008-2009 AG Projects
 # Author: Denis Bilenko
@@ -29,7 +29,7 @@ from glob import glob
 from optparse import OptionParser, Option
 from copy import copy
 from time import time
-from .with_eventlet import import_reactor
+from with_eventlet import import_reactor
 
 first_hubs = ['poll', 'selects', 'twistedr']
 first_reactors = ['selectreactor', 'pollreactor']

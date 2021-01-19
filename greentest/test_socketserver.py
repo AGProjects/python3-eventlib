@@ -162,8 +162,8 @@ class ForgivingTCPServer(TCPServer):
                 self.server_address = host, port
                 TCPServer.server_bind(self)
                 break
-            except socket.error as xxx_todo_changeme:
-                (err, msg) = xxx_todo_changeme.args
+            except socket.error as error:
+                (err, msg) = error.args
                 if err != errno.EADDRINUSE:
                     raise
                 print('  WARNING: failed to listen on port %d, trying another' % port, file=sys.__stderr__)

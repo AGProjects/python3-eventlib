@@ -25,6 +25,7 @@ import select
 import socket
 import errno
 import sys
+import ssl
 
 
 def g_log(*args):
@@ -120,6 +121,13 @@ try:
 except ImportError:
     pass
 
+def wrap_ssl(sock, certificate=None, private_key=None):
+    return ssl.wrap_socket(sock,
+           keyfile=private_key, certfile=certificate,
+           server_side=False, cert_reqs=ssl.CERT_NONE,
+           ssl_version=ssl.PROTOCOL_SSLv23, ca_certs=None,
+           do_handshake_on_connect=False,
+           suppress_ragged_eofs=True)
 
 def wrap_threading_local_with_coro_local():
     """monkey patch threading.local with something that is

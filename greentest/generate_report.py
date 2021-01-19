@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 # Copyright (c) 2008-2009 AG Projects
 # Author: Denis Bilenko
@@ -206,7 +206,7 @@ def generate_raw_results(path, database):
     c = sqlite3.connect(database)
     res = c.execute('select id, stdout from command_record').fetchall()
     for id, out in res:
-        file(os.path.join(path, '%s.txt' % id), 'w').write(out.encode('utf-8'))
+        open(os.path.join(path, '%s.txt' % id), 'w').write(out)
         sys.stderr.write('.')
     sys.stderr.write('\n')
 
@@ -222,7 +222,7 @@ def main(db):
     except OSError as ex:
         if 'File exists' not in str(ex):
             raise
-    file(path + '/index.html', 'w').write(report)
+    open(path + '/index.html', 'w').write(report)
     generate_raw_results(path, db)
 
 if __name__=='__main__':

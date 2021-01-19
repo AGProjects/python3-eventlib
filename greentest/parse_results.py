@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 # Copyright (c) 2008-2009 AG Projects
 # Author: Denis Bilenko
@@ -29,6 +29,8 @@ import re
 import glob
 
 def parse_stdout(s):
+    if isinstance(s, bytes):
+        s = s.decode('utf-8')
     argv = re.search('^===ARGV=(.*?)$', s, re.M).group(1)
     argv = argv.split()
     testname = argv[-1]
@@ -125,4 +127,4 @@ if __name__=='__main__':
         sys.argv.append(latest_db)
     for db in sys.argv[1:]:
         main(db)
-    exec(compile(open('generate_report.py', "rb").read(), 'generate_report.py', 'exec'))
+    exec(compile(open('generate_report.py').read(), 'generate_report.py', 'exec'))

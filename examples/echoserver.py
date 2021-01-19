@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 """\
 @file echoserver.py
@@ -35,16 +35,16 @@ THE SOFTWARE.
 from eventlib import api
 
 def handle_socket(reader, writer):
-    print("client connected")
+    print ("client connected")
     while True:
         # pass through every non-eof line
         x = reader.readline()
         if not x: break
         writer.write(x)
-        print("echoed", x)
-    print("client disconnected")
+        print(("echoed", x))
+    print ("client disconnected")
 
-print("server socket listening on port 6000")
+print ("server socket listening on port 6000")
 server = api.tcp_listener(('0.0.0.0', 6000))
 while True:
     try:

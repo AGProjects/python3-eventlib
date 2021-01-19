@@ -16,14 +16,15 @@
 import os
 import threading
 
-from queue import Empty, Queue
+from queue import Empty
+from queue import _PySimpleQueue as SimpleQueue
 
 from eventlib import api, coros, greenio
 
-QUIET=False
+QUIET=True
 
 _rpipe, _wpipe = os.pipe()
-_rfile = os.fdopen(_rpipe,"r",0)
+_rfile = os.fdopen(_rpipe,"rb",0)
 ## Work whether or not wrap_pipe_with_coroutine_pipe was called
 if not isinstance(_rfile, greenio.GreenPipe):
     _rfile = greenio.GreenPipe(_rfile)
@@ -31,19 +32,20 @@ if not isinstance(_rfile, greenio.GreenPipe):
 
 def _signal_t2e():
     from eventlib import util
-    nwritten = util.__original_write__(_wpipe, ' ')
+    nwritten = util.__original_write__(_wpipe, b' ')
 
-_reqq = Queue(maxsize=-1)
-_rspq = Queue(maxsize=-1)
+_reqq = SimpleQueue()
+_rspq = SimpleQueue()
 
 def tpool_trampoline():
+    from eventlib import util
     global _reqq, _rspq
     while(True):
         _c = _rfile.recv(1)
-        assert(_c != "")
+        assert(_c != b'')
         while not _rspq.empty():
             try:
-                (e,rv) = _rspq.get(block=False)
+                (e,rv) = _rspq.get()
                 e.send(rv)
                 rv = None
             except Empty:

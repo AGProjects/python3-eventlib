@@ -42,13 +42,13 @@ def higher_order_recv(recv_func):
             chunk, self.recvbuffer = buf[:buflen], buf[buflen:]
             return chunk
         fd = self.fd
-        bytes = recv_func(fd, buflen)
+        _bytes = recv_func(fd, buflen)
         if self.gettimeout():
             end = time.time()+self.gettimeout()
         else:
             end = None
         timeout = None
-        while bytes is None:
+        while _bytes is None:
             try:
                 if end:
                     timeout = end - time.time()
@@ -57,22 +57,25 @@ def higher_order_recv(recv_func):
                 raise
             except socket.error as e:
                 if e[0] == errno.EPIPE:
-                    bytes = ''
+                    _bytes = b''
                 else:
                     raise
             else:
-                bytes = recv_func(fd, buflen)
-        self.recvcount += len(bytes)
-        return bytes
+                _bytes = recv_func(fd, buflen)
+        self.recvcount += len(_bytes)
+        return _bytes
     return recv
 
 
 def higher_order_send(send_func):
     def send(self, data):
+        if not isinstance(data, bytes):
+            data = data.encode()
         if self.act_non_blocking:
             return self.fd.send(data)
         count = send_func(self.fd, data)
         if not count:
+            return self.fd.send(data)
             return 0
         self.sendcount += count
         return count
@@ -108,11 +111,11 @@ def socket_accept(descriptor):
         raise
 
 
-def socket_send(descriptor, data):
+def socket_send(descriptor, data:bytes):
     try:
         return descriptor.send(data)
     except socket.error as e:
-        if e.args[0] in BLOCKING_ERR + errno.ENOTCONN:
+        if e.args[0] in BLOCKING_ERR + (errno.ENOTCONN, ):
             return 0
         raise
 
@@ -187,7 +190,7 @@ class GreenSocket(object):
         self._fileno = fd.fileno()
         self.sendcount = 0
         self.recvcount = 0
-        self.recvbuffer = ''
+        self.recvbuffer = b''
         self.closed = False
         self.timeout = socket.getdefaulttimeout()
 
@@ -222,6 +225,11 @@ class GreenSocket(object):
     def bind(self, *args, **kw):
         fn = self.bind = self.fd.bind
         return fn(*args, **kw)
+
+
+    def _decref_socketios(self):
+        if self.closed:
+                self.close()
 
     def close(self, *args, **kw):
         if self.closed:
@@ -308,7 +316,7 @@ class GreenSocket(object):
         return fn(*args, **kw)
 
     def makefile(self, mode='r', bufsize=-1):
-        return socket._fileobject(self.dup(), mode, bufsize)
+        return socket.SocketIO(self.dup(), mode)
 
     def makeGreenFile(self, mode='r', bufsize=-1):
         return GreenFile(self.dup())
@@ -407,7 +415,12 @@ def read(self, size=None):
                 lst[-1], self.sock.recvbuffer = d[:-overbite], d[-overbite:]
             else:
                 lst[-1], self.sock.recvbuffer = d, ''
-    return ''.join(lst)
+    if isinstance(lst[0], bytes):
+        stringlst = [x.decode('utf-8') for x in lst]
+        return ''.join(stringlst)
+    else:
+        return ''.join(lst)
+
 
 
 class GreenFile(object):
@@ -442,7 +455,7 @@ class GreenFile(object):
         checked = 0
         if size is None:
             while True:
-                found = buf.find(terminator, checked)
+                found = buf.find(terminator.encode(), checked)
                 if found != -1:
                     found += len(terminator)
                     chunk, self.sock.recvbuffer = buf[:found], buf[found:]

@@ -1,11 +1,10 @@
-__ssl = __import__('ssl')
-for var in (var for var in dir(__ssl) if not var.startswith('__')):
-    exec("%s = __ssl.%s" % (var, var))
-del var
+import ssl as __ssl
+from ssl import _ssl
+from _ssl import ( RAND_add, RAND_status, SSL_ERROR_ZERO_RETURN, SSL_ERROR_WANT_READ, SSL_ERROR_WANT_WRITE, SSL_ERROR_WANT_X509_LOOKUP, SSL_ERROR_SYSCALL, SSL_ERROR_SSL, SSL_ERROR_WANT_CONNECT, SSL_ERROR_EOF, SSL_ERROR_INVALID_ERROR_CODE, SSLError )
 
 time = __import__('time')
 from eventlib.api import trampoline
-from eventlib.greenio import set_nonblocking, GreenSocket, CONNECT_ERR, CONNECT_SUCCESS, BLOCKING_ERR
+from eventlib.greenio import ( set_nonblocking, GreenSocket, GreenFile, CONNECT_ERR, CONNECT_SUCCESS, BLOCKING_ERR  )
 orig_socket = __import__('socket')
 socket = orig_socket.socket
 
@@ -93,6 +92,8 @@ class GreenSSLSocket(__ssl.SSLSocket):
             super(GreenSSLSocket, self).read, len)
 
     def send (self, data, flags=0):
+        if not isinstance(data, bytes):
+            data = data.encode()
         if self._sslobj:
             return self._call_trampolining(
                 super(GreenSSLSocket, self).send, data, flags)
@@ -255,5 +256,6 @@ if hasattr(__ssl, 'sslwrap_simple'):
                                   server_side=False,
                                   cert_reqs=CERT_NONE,
                                   ssl_version=PROTOCOL_SSLv23,
+                                  do_handshake_on_connect=False,
                                   ca_certs=None)
         return ssl_sock

@@ -1,21 +1,15 @@
-urllib = __import__('urllib')
-for var in dir(urllib):
-    exec("%s = urllib.%s" % (var, var))
-
-# import the following to be a better drop-in replacement
-__import_lst = ['__all__', '__version__', 'MAXFTPCACHE', 'ContentTooShortError',
-                'ftpcache', '_noheaders', 'noheaders', 'addbase', 'addclosehook',
-                'addinfo', 'addinfourl', '_is_unicode', 'toBytes', '_hextochr',
-                'always_safe', 'getproxies_environment', 'proxy_bypass']
-
-for var in __import_lst:
-    exec("%s = urllib.%s" % (var, var))
-
-from eventlib.green import socket
 import os
-from eventlib.green import time
 import sys
+import urllib
+from eventlib.green import socket, time
+from urllib.error import( __all__ )
+from urllib.response import( __all__ )
+from urllib.robotparser import( __all__ )
+from urllib.request import( __all__, __version__, MAXFTPCACHE, ftpcache, ftpwrapper, _noheaders, noheaders, proxy_bypass )
+from urllib.parse import( __all__,  splithost, splituser, splittype, splitattr, splitpasswd, splitport, splitquery, splitvalue)
 from urllib.parse import urljoin as basejoin
+
+parse = urllib.parse.parse_qs
 
 # Shortcut for basic usage
 _urlopener = None
@@ -519,7 +513,7 @@ def ftperrors():
 
 # Utility classes
 
-class ftpwrapper(urllib.ftpwrapper):
+class ftpwrapper(ftpwrapper):
     """Class used by open_ftp() for cache of open FTP connections."""
 
     def init(self):

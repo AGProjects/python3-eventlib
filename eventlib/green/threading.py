@@ -123,8 +123,8 @@ class _RLock(_Verbose):
 
     # Internal methods used by condition variables
 
-    def _acquire_restore(self, xxx_todo_changeme):
-        (count, owner) = xxx_todo_changeme
+    def _acquire_restore(self, state):
+        (count, owner) = state 
         self.__block.acquire()
         self.__count = count
         self.__owner = owner

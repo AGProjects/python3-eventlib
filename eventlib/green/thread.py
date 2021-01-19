@@ -1,5 +1,5 @@
 """implements standard module 'thread' with greenlets"""
-__thread = __import__('thread')
+__thread = __import__('_thread')
 from eventlib.support import greenlets as greenlet
 from eventlib.api import spawn
 from eventlib.coros import Semaphore as LockType

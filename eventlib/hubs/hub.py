@@ -155,7 +155,7 @@ class BaseHub(object):
                 self.prepare_timers()
                 wakeup_when = self.sleep_until()
                 if wakeup_when is None:
-                    sleep_time = self.default_sleep()
+                    sleep_time = self.default_sleep() 
                 else:
                     sleep_time = wakeup_when - self.clock()
                 if sleep_time > 0:

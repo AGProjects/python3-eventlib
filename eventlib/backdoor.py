@@ -111,14 +111,14 @@ def backdoor_server(server, locals=None):
         server.close()
 
 
-def backdoor(xxx_todo_changeme, locals=None):
+def backdoor(connection, locals=None):
     """ Use this with tcp_server like so:
         api.tcp_server(
                        api.tcp_listener(('127.0.0.1', 9000)),
                        backdoor.backdoor,
                        {})
     """
-    (conn, addr) = xxx_todo_changeme
+    (conn, addr) = connection 
     host, port = addr
     print("backdoor to %s:%s" % (host, port))
     fl = conn.makeGreenFile("rw")

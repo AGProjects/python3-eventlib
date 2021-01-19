@@ -132,7 +132,7 @@ class FileScheme(object):
                 pass  # don't complain if already deleted
         elif method == 'put':
             try:
-                f = file(self.path, 'w')
+                f = open(self.path, 'w')
                 f.write(body)
                 f.close()
             except IOError as e:
@@ -159,7 +159,7 @@ class FileScheme(object):
     def read(self, howmuch=None):
         if self.method == 'get':
             try:
-                fl = file(self.path, 'r')
+                fl = open(self.path, 'r')
                 if howmuch is None:
                     return fl.read()
                 else:

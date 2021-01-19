@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 # @file test_mysql_pool.py
 # @brief Test cases for mysql_pool

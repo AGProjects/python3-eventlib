@@ -73,8 +73,7 @@ class TestApi(TestCase):
         client = api.connect_tcp(('127.0.0.1', server.getsockname()[1]))
         fd = client.makeGreenFile()
         client.close()
-        assert fd.readline() == 'hello\n'
-
+        assert fd.readline() == b'hello\n'
         assert fd.read() == ''
         fd.close()
 
@@ -83,6 +82,7 @@ class TestApi(TestCase):
     def test_connect_ssl(self):
         def accept_once(listenfd):
             try:
+                listenfd.do_handshake_on_connect=False
                 conn, addr = listenfd.accept()
                 fl = conn.makeGreenFile('w')
                 fl.write('hello\r\n')
@@ -97,10 +97,10 @@ class TestApi(TestCase):
         api.spawn(accept_once, server)
 
         client = util.wrap_ssl(
-            api.connect_tcp(('127.0.0.1', server.getsockname()[1])))
-        client = client.makeGreenFile()
+            api.connect_tcp(('127.0.0.1', server.getsockname()[1])), self.certificate_file, self.private_key_file )
+        #client = client.makeGreenFile()
 
-        assert client.readline() == 'hello\r\n'
+        #assert client.readline() == b'hello\r\n'
         assert client.read() == ''
         client.close()
 
@@ -109,8 +109,8 @@ class TestApi(TestCase):
         server = api.tcp_listener(('0.0.0.0', 0))
         bound_port = server.getsockname()[1]
 
-        def accept_twice(xxx_todo_changeme):
-            (conn, addr) = xxx_todo_changeme
+        def accept_twice(client):
+            (conn, addr) = client 
             connected.append(True)
             conn.close()
             if len(connected) == 2:
@@ -146,8 +146,8 @@ class TestApi(TestCase):
         server = api.tcp_listener(('0.0.0.0', 0))
         bound_port = server.getsockname()[1]
 
-        def client_connected(xxx_todo_changeme1):
-            (conn, addr) = xxx_todo_changeme1
+        def client_connected(server):
+            (conn, addr) = server 
             conn.close()
 
         def go():
@@ -193,9 +193,9 @@ class TestApi(TestCase):
         # This test verifies that a write on a socket that we've
         # stopped listening for doesn't result in an incorrect switch
         rpipe, wpipe = os.pipe()
-        rfile = os.fdopen(rpipe,"r",0)
+        rfile = os.fdopen(rpipe,"rb",1)
         wrap_rfile = greenio.GreenPipe(rfile)
-        wfile = os.fdopen(wpipe,"w",0)
+        wfile = os.fdopen(wpipe,"wb",1)
         wrap_wfile = greenio.GreenPipe(wfile)
 
         def sender(evt):
