@@ -45,11 +45,11 @@ class CreationTestCase(unittest.TestCase):
     def testTypeCheck(self):
         # Test type checking by settimeout()
         self.sock.settimeout(0)
-        self.sock.settimeout(0L)
+        self.sock.settimeout(0)
         self.sock.settimeout(0.0)
         self.sock.settimeout(None)
         self.assertRaises(TypeError, self.sock.settimeout, "")
-        self.assertRaises(TypeError, self.sock.settimeout, u"")
+        self.assertRaises(TypeError, self.sock.settimeout, "")
         self.assertRaises(TypeError, self.sock.settimeout, ())
         self.assertRaises(TypeError, self.sock.settimeout, [])
         self.assertRaises(TypeError, self.sock.settimeout, {})
@@ -58,7 +58,7 @@ class CreationTestCase(unittest.TestCase):
     def testRangeCheck(self):
         # Test range checking by settimeout()
         self.assertRaises(ValueError, self.sock.settimeout, -1)
-        self.assertRaises(ValueError, self.sock.settimeout, -1L)
+        self.assertRaises(ValueError, self.sock.settimeout, -1)
         self.assertRaises(ValueError, self.sock.settimeout, -1.0)
 
     def testTimeoutThenBlocking(self):
@@ -117,12 +117,12 @@ class TimeoutTestCase(unittest.TestCase):
             self.addr_remote = ('tut.fi', 80)
 
         _t1 = time.time()
-        self.failUnlessRaises(socket.error, self.sock.connect,
+        self.assertRaises(socket.error, self.sock.connect,
                 self.addr_remote)
         _t2 = time.time()
 
         _delta = abs(_t1 - _t2)
-        self.assert_(_delta < _timeout + self.fuzz,
+        self.assertTrue(_delta < _timeout + self.fuzz,
                      "timeout (%g) is more than %g seconds more than expected (%g)"
                      %(_delta, self.fuzz, _timeout))
 
@@ -133,11 +133,11 @@ class TimeoutTestCase(unittest.TestCase):
         self.sock.settimeout(_timeout)
 
         _t1 = time.time()
-        self.failUnlessRaises(socket.error, self.sock.recv, 1024)
+        self.assertRaises(socket.error, self.sock.recv, 1024)
         _t2 = time.time()
 
         _delta = abs(_t1 - _t2)
-        self.assert_(_delta < _timeout + self.fuzz,
+        self.assertTrue(_delta < _timeout + self.fuzz,
                      "timeout (%g) is %g seconds more than expected (%g)"
                      %(_delta, self.fuzz, _timeout))
 
@@ -149,11 +149,11 @@ class TimeoutTestCase(unittest.TestCase):
         self.sock.listen(5)
 
         _t1 = time.time()
-        self.failUnlessRaises(socket.error, self.sock.accept)
+        self.assertRaises(socket.error, self.sock.accept)
         _t2 = time.time()
 
         _delta = abs(_t1 - _t2)
-        self.assert_(_delta < _timeout + self.fuzz,
+        self.assertTrue(_delta < _timeout + self.fuzz,
                      "timeout (%g) is %g seconds more than expected (%g)"
                      %(_delta, self.fuzz, _timeout))
 
@@ -165,11 +165,11 @@ class TimeoutTestCase(unittest.TestCase):
         self.sock.bind(self.addr_local)
 
         _t1 = time.time()
-        self.failUnlessRaises(socket.error, self.sock.recvfrom, 8192)
+        self.assertRaises(socket.error, self.sock.recvfrom, 8192)
         _t2 = time.time()
 
         _delta = abs(_t1 - _t2)
-        self.assert_(_delta < _timeout + self.fuzz,
+        self.assertTrue(_delta < _timeout + self.fuzz,
                      "timeout (%g) is %g seconds more than expected (%g)"
                      %(_delta, self.fuzz, _timeout))
 

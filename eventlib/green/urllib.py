@@ -1,6 +1,6 @@
 urllib = __import__('urllib')
 for var in dir(urllib):
-    exec "%s = urllib.%s" % (var, var)
+    exec("%s = urllib.%s" % (var, var))
 
 # import the following to be a better drop-in replacement
 __import_lst = ['__all__', '__version__', 'MAXFTPCACHE', 'ContentTooShortError',
@@ -9,13 +9,13 @@ __import_lst = ['__all__', '__version__', 'MAXFTPCACHE', 'ContentTooShortError',
                 'always_safe', 'getproxies_environment', 'proxy_bypass']
 
 for var in __import_lst:
-    exec "%s = urllib.%s" % (var, var)
+    exec("%s = urllib.%s" % (var, var))
 
 from eventlib.green import socket
 import os
 from eventlib.green import time
 import sys
-from urlparse import urljoin as basejoin
+from urllib.parse import urljoin as basejoin
 
 # Shortcut for basic usage
 _urlopener = None
@@ -42,7 +42,7 @@ def urlcleanup():
     if _urlopener:
         _urlopener.cleanup()
 
-class URLopener(urllib.URLopener):
+class URLopener(urllib.request.URLopener):
 
     def open_http(self, url, data=None):
         """Use HTTP protocol."""
@@ -75,7 +75,7 @@ class URLopener(urllib.URLopener):
                     host = realhost
 
             #print "proxy via http:", host, selector
-        if not host: raise IOError, ('http error', 'no host given')
+        if not host: raise IOError('http error', 'no host given')
 
         if proxy_passwd:
             import base64
@@ -105,7 +105,7 @@ class URLopener(urllib.URLopener):
         errcode, errmsg, headers = h.getreply()
         if errcode == -1:
             # something went wrong with the HTTP status line
-            raise IOError, ('http protocol error', 0,
+            raise IOError('http protocol error', 0,
                             'got a bad status line', None)
         fp = h.getfile()
         if errcode == 200:
@@ -144,7 +144,7 @@ class URLopener(urllib.URLopener):
                     if user_passwd:
                         selector = "%s://%s%s" % (urltype, realhost, rest)
                 #print "proxy via https:", host, selector
-            if not host: raise IOError, ('https error', 'no host given')
+            if not host: raise IOError('https error', 'no host given')
             if proxy_passwd:
                 import base64
                 proxy_auth = base64.b64encode(proxy_passwd).strip()
@@ -175,7 +175,7 @@ class URLopener(urllib.URLopener):
             errcode, errmsg, headers = h.getreply()
             if errcode == -1:
                 # something went wrong with the HTTP status line
-                raise IOError, ('http protocol error', 0,
+                raise IOError('http protocol error', 0,
                                 'got a bad status line', None)
             fp = h.getfile()
             if errcode == 200:
@@ -190,10 +190,10 @@ class URLopener(urllib.URLopener):
     def open_gopher(self, url):
         """Use Gopher protocol."""
         if not isinstance(url, str):
-            raise IOError, ('gopher error', 'proxy support for gopher protocol currently not implemented')
+            raise IOError('gopher error', 'proxy support for gopher protocol currently not implemented')
         from eventlib.green import gopherlib
         host, selector = splithost(url)
-        if not host: raise IOError, ('gopher error', 'no host given')
+        if not host: raise IOError('gopher error', 'no host given')
         host = unquote(host)
         type, selector = splitgophertype(selector)
         selector, query = splitquery(selector)
@@ -209,14 +209,14 @@ class URLopener(urllib.URLopener):
         """Use local file."""
         import mimetypes, mimetools, email.Utils
         try:
-            from cStringIO import StringIO
+            from io import StringIO
         except ImportError:
-            from StringIO import StringIO
+            from io import StringIO
         host, file = splithost(url)
         localname = url2pathname(file)
         try:
             stats = os.stat(localname)
-        except OSError, e:
+        except OSError as e:
             raise IOError(e.errno, e.strerror, e.filename)
         size = stats.st_size
         modified = email.Utils.formatdate(stats.st_mtime, usegmt=True)
@@ -238,19 +238,19 @@ class URLopener(urllib.URLopener):
                 urlfile = 'file://' + file
             return addinfourl(open(localname, 'rb'),
                               headers, urlfile)
-        raise IOError, ('local file error', 'not on local host')
+        raise IOError('local file error', 'not on local host')
 
     def open_ftp(self, url):
         """Use FTP protocol."""
         if not isinstance(url, str):
-            raise IOError, ('ftp error', 'proxy support for ftp protocol currently not implemented')
+            raise IOError('ftp error', 'proxy support for ftp protocol currently not implemented')
         import mimetypes, mimetools
         try:
-            from cStringIO import StringIO
+            from io import StringIO
         except ImportError:
-            from StringIO import StringIO
+            from io import StringIO
         host, path = splithost(url)
-        if not host: raise IOError, ('ftp error', 'no host given')
+        if not host: raise IOError('ftp error', 'no host given')
         host, port = splitport(host)
         user, host = splituser(host)
         if user: user, passwd = splitpasswd(user)
@@ -274,7 +274,7 @@ class URLopener(urllib.URLopener):
         # XXX thread unsafe!
         if len(self.ftpcache) > MAXFTPCACHE:
             # Prune the cache, rather arbitrarily
-            for k in self.ftpcache.keys():
+            for k in list(self.ftpcache.keys()):
                 if k != key:
                     v = self.ftpcache[k]
                     del self.ftpcache[k]
@@ -299,8 +299,8 @@ class URLopener(urllib.URLopener):
                 headers += "Content-Length: %d\n" % retrlen
             headers = mimetools.Message(StringIO(headers))
             return addinfourl(fp, headers, "ftp:" + url)
-        except ftperrors(), msg:
-            raise IOError, ('ftp error', msg), sys.exc_info()[2]
+        except ftperrors() as msg:
+            raise IOError('ftp error', msg).with_traceback(sys.exc_info()[2])
 
 # this one is copied verbatim
 class FancyURLopener(URLopener):
@@ -479,13 +479,13 @@ class FancyURLopener(URLopener):
         """Override this in a GUI environment!"""
         import getpass
         try:
-            user = raw_input("Enter username for %s at %s: " % (realm,
+            user = input("Enter username for %s at %s: " % (realm,
                                                                 host))
             passwd = getpass.getpass("Enter password for %s in %s at %s: " %
                 (user, realm, host))
             return user, passwd
         except KeyboardInterrupt:
-            print
+            print()
             return None, None
 
 
@@ -547,9 +547,9 @@ class ftpwrapper(urllib.ftpwrapper):
             try:
                 cmd = 'RETR ' + file
                 conn = self.ftp.ntransfercmd(cmd)
-            except ftplib.error_perm, reason:
+            except ftplib.error_perm as reason:
                 if str(reason)[:3] != '550':
-                    raise IOError, ('ftp error', reason), sys.exc_info()[2]
+                    raise IOError('ftp error', reason).with_traceback(sys.exc_info()[2])
         if not conn:
             # Set transfer mode to ASCII!
             self.ftp.voidcmd('TYPE A')
@@ -572,17 +572,17 @@ def test1():
     uqs = unquote(qs)
     t1 = time.time()
     if uqs != s:
-        print 'Wrong!'
-    print repr(s)
-    print repr(qs)
-    print repr(uqs)
-    print round(t1 - t0, 3), 'sec'
+        print('Wrong!')
+    print(repr(s))
+    print(repr(qs))
+    print(repr(uqs))
+    print(round(t1 - t0, 3), 'sec')
 
 
 def reporthook(blocknum, blocksize, totalsize):
     # Report during remote transfers
-    print "Block number: %d, Block size: %d, Total size: %d" % (
-        blocknum, blocksize, totalsize)
+    print("Block number: %d, Block size: %d, Total size: %d" % (
+        blocknum, blocksize, totalsize))
 
 # Test program
 def test(args=[]):
@@ -599,22 +599,22 @@ def test(args=[]):
             args.append('https://synergy.as.cmu.edu/~geek/')
     try:
         for url in args:
-            print '-'*10, url, '-'*10
+            print('-'*10, url, '-'*10)
             fn, h = urlretrieve(url, None, reporthook)
-            print fn
+            print(fn)
             if h:
-                print '======'
-                for k in h.keys(): print k + ':', h[k]
-                print '======'
+                print('======')
+                for k in list(h.keys()): print(k + ':', h[k])
+                print('======')
             fp = open(fn, 'rb')
             data = fp.read()
             del fp
             if '\r' in data:
                 table = string.maketrans("", "")
                 data = data.translate(table, "\r")
-            print data
+            print(data)
             fn, h = None, None
-        print '-'*40
+        print('-'*40)
     finally:
         urlcleanup()
 
@@ -622,18 +622,18 @@ def main():
     import getopt, sys
     try:
         opts, args = getopt.getopt(sys.argv[1:], "th")
-    except getopt.error, msg:
-        print msg
-        print "Use -h for help"
+    except getopt.error as msg:
+        print(msg)
+        print("Use -h for help")
         return
     t = 0
     for o, a in opts:
         if o == '-t':
             t = t + 1
         if o == '-h':
-            print "Usage: python urllib.py [-t] [url ...]"
-            print "-t runs self-test;",
-            print "otherwise, contents of urls are printed"
+            print("Usage: python urllib.py [-t] [url ...]")
+            print("-t runs self-test;", end=' ')
+            print("otherwise, contents of urls are printed")
             return
     if t:
         if t > 1:
@@ -641,9 +641,9 @@ def main():
         test(args)
     else:
         if not args:
-            print "Use -h for help"
+            print("Use -h for help")
         for url in args:
-            print urlopen(url).read(),
+            print(urlopen(url).read(), end=' ')
 
 # Run test program when run as a script
 if __name__ == '__main__':

@@ -84,7 +84,7 @@ class TestProc(LimitedTestCase):
         p.link(event)
         self.assertEqual(event.wait(), 100)
 
-        for i in xrange(3):
+        for i in range(3):
             event2 = coros.event()
             p.link(event2)
             self.assertEqual(event2.wait(), 100)
@@ -168,7 +168,7 @@ class TestReturn_link(TestCase):
         p = self.p = proc.spawn(return25)
         self._test_return(p, True, 25, proc.LinkedCompleted, lambda : sleep(0))
         # repeating the same with dead process
-        for _ in xrange(3):
+        for _ in range(3):
             self._test_return(p, False, 25, proc.LinkedCompleted, lambda : sleep(0))
 
     def _test_return(self, p, first_time, result, kill_exc_type, action):
@@ -232,7 +232,7 @@ class TestRaise_link(TestCase):
         p = self.p = proc.spawn(int, 'badint')
         self._test_raise(p, True, proc.LinkedFailed)
         # repeating the same with dead process
-        for _ in xrange(3):
+        for _ in range(3):
             self._test_raise(p, False, proc.LinkedFailed)
 
     def _test_kill(self, p, first_time, kill_exc_type):
@@ -264,7 +264,7 @@ class TestRaise_link(TestCase):
         p = self.p = proc.spawn(sleep, DELAY)
         self._test_kill(p, True, proc.LinkedKilled)
         # repeating the same with dead process
-        for _ in xrange(3):
+        for _ in range(3):
             self._test_kill(p, False, proc.LinkedKilled)
 
 class TestRaise_link_exception(TestCase):
@@ -312,7 +312,7 @@ class TestStuff(unittest.TestCase):
         b = proc.spawn(int, 'second')
         try:
             proc.waitall([a, b])
-        except ValueError, ex:
+        except ValueError as ex:
             assert 'second' in str(ex), repr(str(ex))
 
     def test_multiple_listeners_error(self):

@@ -29,9 +29,9 @@ from eventlib import util
 from greentest import find_command
 
 try:
-    from cStringIO import StringIO
+    from io import StringIO
 except ImportError:
-    from StringIO import StringIO
+    from io import StringIO
 
 util.wrap_socket_with_coroutine_socket()
 
@@ -105,8 +105,8 @@ class TestHttpd(TestCase):
         result = fd.read()
         fd.close()
         ## The server responds with the maximum version it supports
-        self.assert_(result.startswith('HTTP'), result)
-        self.assert_(result.endswith('hello world'))
+        self.assertTrue(result.startswith('HTTP'), result)
+        self.assertTrue(result.endswith('hello world'))
 
     def test_002_keepalive(self):
         sock = api.connect_tcp(
@@ -149,7 +149,7 @@ class TestHttpd(TestCase):
         # ab is apachebench
         out = processes.Process(find_command('ab'),
                                 ['-c','64','-n','1024', '-k', url])
-        print out.read()
+        print(out.read())
 
     def test_006_reject_long_urls(self):
         sock = api.connect_tcp(

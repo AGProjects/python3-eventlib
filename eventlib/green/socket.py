@@ -1,6 +1,6 @@
 __socket = __import__('socket')
 for var in __socket.__all__:
-    exec "%s = __socket.%s" % (var, var)
+    exec("%s = __socket.%s" % (var, var))
 _fileobject = __socket._fileobject
 
 from eventlib.api import get_hub
@@ -74,11 +74,11 @@ def create_connection(address, timeout=_GLOBAL_DEFAULT_TIMEOUT):
             sock.connect(sa)
             return sock
 
-        except error, msg:
+        except error as msg:
             if sock is not None:
                 sock.close()
 
-    raise error, msg
+    raise error(msg)
 
 
 try:

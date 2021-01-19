@@ -43,8 +43,8 @@ class Timer(object):
         self.tpl = cb, args, kw
         self.called = False
         if _g_debug:
-            import traceback, cStringIO
-            self.traceback = cStringIO.StringIO()
+            import traceback, io
+            self.traceback = io.StringIO()
             traceback.print_stack(file=self.traceback)
 
     @property

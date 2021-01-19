@@ -55,10 +55,10 @@ class TestGreenness(unittest.TestCase):
     def test_urllib2(self):
         self.assertEqual(self.server.request_count, 0)
         try:
-            urllib2.urlopen('http://127.0.0.1:%s' % port)
+            urllib.request.urlopen('http://127.0.0.1:%s' % port)
             assert False, 'should not get there'
-        except urllib2.HTTPError, ex:
-            assert ex.code == 501, `ex`
+        except urllib.error.HTTPError as ex:
+            assert ex.code == 501, repr(ex)
         self.assertEqual(self.server.request_count, 1)
 
 if __name__ == '__main__':

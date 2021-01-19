@@ -85,7 +85,7 @@ The wire protocol is to pickle the Request class in this file. The
 request class is basically an action and a map of parameters'
 """
 
-from cPickle import dumps, loads
+from pickle import dumps, loads
 import os
 import struct
 import sys
@@ -185,9 +185,9 @@ def _read_response(id, attribute, input, cp):
     """@brief local helper method to read respones from the rpc server."""
     try:
         str = _read_lp_hunk(input)
-        _prnt(`str`)
+        _prnt(repr(str))
         response = loads(str)
-    except (AttributeError, DeadProcess), e:
+    except (AttributeError, DeadProcess) as e:
         raise UnrecoverableError(e)
     _prnt("response: %s" % response)
     if response[0] == 'value':
@@ -224,7 +224,7 @@ def _is_local(attribute):
 def _prnt(message):
     global _g_debug_mode
     if _g_debug_mode:
-        print message
+        print(message)
 
 _g_logfile = None
 def _log(message):
@@ -395,7 +395,7 @@ not need to deal with this class directly."""
         # tack anything on to the return value here because str values are used as data.
         return self.__str__()
 
-    def __nonzero__(self):
+    def __bool__(self):
         # bool(obj) is another method that skips __getattribute__.  There's no good way to just pass
         # the method on, so we use a special message.
         my_cp = self.__local_dict['_cp']
@@ -493,7 +493,7 @@ when the id is None."""
     def handle_getattr(self, obj, req):
         try:
             return getattr(obj, req['attribute'])
-        except AttributeError, e:
+        except AttributeError as e:
             if hasattr(obj, "__getitem__"):
                 return obj[req['attribute']]
             else:
@@ -503,7 +503,7 @@ when the id is None."""
     def handle_setattr(self, obj, req):
         try:
             return setattr(obj, req['attribute'], req['value'])
-        except AttributeError, e:
+        except AttributeError as e:
             if hasattr(obj, "__setitem__"):
                 return obj.__setitem__(req['attribute'], req['value'])
             else:
@@ -521,7 +521,7 @@ when the id is None."""
         rhs = None
         try:
             rhs = self._objects[req['rhs']]
-        except KeyError, e:
+        except KeyError as e:
             return False
         return (obj == rhs)
 
@@ -529,7 +529,7 @@ when the id is None."""
         #_log("calling %s " % (req['name']))
         try:
             fn = getattr(obj, req['name'])
-        except AttributeError, e:
+        except AttributeError as e:
             if hasattr(obj, "__setitem__"):
                 fn = obj[req['name']]
             else:
@@ -581,7 +581,7 @@ when the id is None."""
                         id = int(id)
                         obj = self._objects[id]
                     #_log("id, object: %d %s" % (id, obj))
-                except Exception, e:
+                except Exception as e:
                     #_log("Exception %s" % str(e))
                     pass
                 if obj is None or id is None:
@@ -595,7 +595,7 @@ when the id is None."""
                 try:
                     handler = getattr(self, handler_name)
                 except AttributeError:
-                    raise BadRequest, request.action()
+                    raise BadRequest(request.action())
 
                 response = handler(obj, request)
 
@@ -615,9 +615,9 @@ when the id is None."""
                     #_log("objects: %s" % str(self._objects))
                     self.respond(['object', self._next_id])
                     self._next_id += 1
-            except SystemExit, e:
+            except SystemExit as e:
                 raise e
-            except Exception, e:
+            except Exception as e:
                 self.write_exception(e)
             except:
                 self.write_exception(sys.exc_info()[0])
@@ -628,13 +628,13 @@ when the id is None."""
 @param value The value to test.
 @return Returns true if value is a simple serializeable set of data.
 """
-        return type(value) in (str,unicode,int,float,long,bool,type(None))
+        return type(value) in (str,str,int,float,int,bool,type(None))
 
     def respond(self, body):
         _log("responding with: %s" % body)
         #_log("objects: %s" % self._objects)
         s = dumps(body)
-        _log(`s`)
+        _log(repr(s))
         str_ = _write_lp_hunk(self._out, s)
 
     def write_exception(self, e):
@@ -665,12 +665,12 @@ def raise_standard_error():
 
 # test function to make sure print doesn't break the wrapper
 def print_string(str):
-    print str
+    print(str)
 
 # test function to make sure printing on stdout doesn't break the
 # wrapper
 def err_string(str):
-    print >>sys.stderr, str
+    print(str, file=sys.stderr)
 
 def main():
     import optparse

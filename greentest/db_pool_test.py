@@ -91,10 +91,10 @@ class TestDBConnectionPool(DBTester):
         # TODO: this is pretty mysql-specific
         cursor.execute("show full processlist")
         rows = cursor.fetchall()
-        self.assert_(rows)
+        self.assertTrue(rows)
 
     def test_connecting(self):
-        self.assert_(self.connection is not None)
+        self.assertTrue(self.connection is not None)
 
     def test_create_cursor(self):
         cursor = self.connection.cursor()
@@ -109,44 +109,44 @@ class TestDBConnectionPool(DBTester):
         cursor = self.connection.cursor()
         try:
             cursor.execute("garbage blah blah")
-            self.assert_(False)
+            self.assertTrue(False)
         except AssertionError:
             raise
-        except Exception, e:
+        except Exception as e:
             pass
         cursor.close()
 
     def test_put_none(self):
         # the pool is of size 1, and its only connection is out
-        self.assert_(self.pool.free() == 0)
+        self.assertTrue(self.pool.free() == 0)
         self.pool.put(None)
         # ha ha we fooled it into thinking that we had a dead process
-        self.assert_(self.pool.free() == 1)
+        self.assertTrue(self.pool.free() == 1)
         conn2 = self.pool.get()
-        self.assert_(conn2 is not None)
-        self.assert_(conn2.cursor)
+        self.assertTrue(conn2 is not None)
+        self.assertTrue(conn2.cursor)
         del conn2
 
     def test_close_does_a_put(self):
-        self.assert_(self.pool.free() == 0)
+        self.assertTrue(self.pool.free() == 0)
         self.connection.close()
-        self.assert_(self.pool.free() == 1)
+        self.assertTrue(self.pool.free() == 1)
         self.assertRaises(AttributeError, self.connection.cursor)
 
     def test_deletion_does_a_put(self):
-        self.assert_(self.pool.free() == 0)
+        self.assertTrue(self.pool.free() == 0)
         self.connection = None
-        self.assert_(self.pool.free() == 1)
+        self.assertTrue(self.pool.free() == 1)
 
     def test_put_doesnt_double_wrap(self):
         self.pool.put(self.connection)
         conn = self.pool.get()
-        self.assert_(not isinstance(conn._base, db_pool.PooledConnectionWrapper))
+        self.assertTrue(not isinstance(conn._base, db_pool.PooledConnectionWrapper))
 
     def test_bool(self):
-        self.assert_(self.connection)
+        self.assertTrue(self.connection)
         self.connection.close()
-        self.assert_(not self.connection)
+        self.assertTrue(not self.connection)
 
     def fill_test_table(self, conn):
         curs = conn.cursor()
@@ -265,23 +265,23 @@ class TestDBConnectionPool(DBTester):
         self.assertEqual(len(self.pool.free_items), 0)
         
     def test_unwrap_connection(self):
-        self.assert_(isinstance(self.connection,
+        self.assertTrue(isinstance(self.connection,
                                 db_pool.GenericConnectionWrapper))
         conn = self.pool._unwrap_connection(self.connection)
-        self.assert_(not isinstance(conn, db_pool.GenericConnectionWrapper))
+        self.assertTrue(not isinstance(conn, db_pool.GenericConnectionWrapper))
         
-        self.assertEquals(None, self.pool._unwrap_connection(None))
-        self.assertEquals(None, self.pool._unwrap_connection(1))
+        self.assertEqual(None, self.pool._unwrap_connection(None))
+        self.assertEqual(None, self.pool._unwrap_connection(1))
         
         # testing duck typing here -- as long as the connection has a 
         # _base attribute, it should be unwrappable
         x = Mock()
         x._base = 'hi'
-        self.assertEquals('hi', self.pool._unwrap_connection(x))
+        self.assertEqual('hi', self.pool._unwrap_connection(x))
         
     def test_safe_close(self):
         self.pool._safe_close(self.connection, quiet=True)
-        self.assertEquals(len(self.pool.free_items), 1)
+        self.assertEqual(len(self.pool.free_items), 1)
         
         self.pool._safe_close(None)
         self.pool._safe_close(1)
@@ -303,32 +303,32 @@ class TestDBConnectionPool(DBTester):
         self.pool = self.create_pool(max_size=2, max_idle=0)
         self.connection = self.pool.get()
         self.connection.close()
-        self.assertEquals(len(self.pool.free_items), 0)
+        self.assertEqual(len(self.pool.free_items), 0)
 
     def test_zero_max_age(self):
         self.pool = self.create_pool(max_size=2, max_age=0)
         self.connection = self.pool.get()
         self.connection.close()
-        self.assertEquals(len(self.pool.free_items), 0)
+        self.assertEqual(len(self.pool.free_items), 0)
         
     def dont_test_max_idle(self):
         # This test is timing-sensitive.  Rename the function without the "dont" to run it, but beware that it could fail or take a while.
         self.pool = self.create_pool(max_size=2, max_idle=0.02)
         self.connection = self.pool.get()
         self.connection.close()
-        self.assertEquals(len(self.pool.free_items), 1)
+        self.assertEqual(len(self.pool.free_items), 1)
         api.sleep(0.01)  # not long enough to trigger the idle timeout
-        self.assertEquals(len(self.pool.free_items), 1)
+        self.assertEqual(len(self.pool.free_items), 1)
         self.connection = self.pool.get()
         self.connection.close()
-        self.assertEquals(len(self.pool.free_items), 1)
+        self.assertEqual(len(self.pool.free_items), 1)
         api.sleep(0.01)  # idle timeout should have fired but done nothing
-        self.assertEquals(len(self.pool.free_items), 1)
+        self.assertEqual(len(self.pool.free_items), 1)
         self.connection = self.pool.get()
         self.connection.close()
-        self.assertEquals(len(self.pool.free_items), 1)
+        self.assertEqual(len(self.pool.free_items), 1)
         api.sleep(0.03) # long enough to trigger idle timeout for real
-        self.assertEquals(len(self.pool.free_items), 0)
+        self.assertEqual(len(self.pool.free_items), 0)
 
     def dont_test_max_idle_many(self):
         # This test is timing-sensitive.  Rename the function without the "dont" to run it, but beware that it could fail or take a while.
@@ -336,38 +336,38 @@ class TestDBConnectionPool(DBTester):
         self.connection, conn2 = self.pool.get(), self.pool.get()
         self.connection.close()
         api.sleep(0.01)
-        self.assertEquals(len(self.pool.free_items), 1)
+        self.assertEqual(len(self.pool.free_items), 1)
         conn2.close()
-        self.assertEquals(len(self.pool.free_items), 2)
+        self.assertEqual(len(self.pool.free_items), 2)
         api.sleep(0.02)  # trigger cleanup of conn1 but not conn2
-        self.assertEquals(len(self.pool.free_items), 1)
+        self.assertEqual(len(self.pool.free_items), 1)
 
     def dont_test_max_age(self):
         # This test is timing-sensitive.  Rename the function without the "dont" to run it, but beware that it could fail or take a while.
         self.pool = self.create_pool(max_size=2, max_age=0.05)
         self.connection = self.pool.get()
         self.connection.close()
-        self.assertEquals(len(self.pool.free_items), 1)
+        self.assertEqual(len(self.pool.free_items), 1)
         api.sleep(0.01)  # not long enough to trigger the age timeout
-        self.assertEquals(len(self.pool.free_items), 1)
+        self.assertEqual(len(self.pool.free_items), 1)
         self.connection = self.pool.get()
         self.connection.close()
-        self.assertEquals(len(self.pool.free_items), 1)
+        self.assertEqual(len(self.pool.free_items), 1)
         api.sleep(0.05) # long enough to trigger age timeout
-        self.assertEquals(len(self.pool.free_items), 0)
+        self.assertEqual(len(self.pool.free_items), 0)
 
     def dont_test_max_age_many(self):
         # This test is timing-sensitive.  Rename the function without the "dont" to run it, but beware that it could fail or take a while.
         self.pool = self.create_pool(max_size=2, max_age=0.15)
         self.connection, conn2 = self.pool.get(), self.pool.get()
         self.connection.close()
-        self.assertEquals(len(self.pool.free_items), 1)
+        self.assertEqual(len(self.pool.free_items), 1)
         api.sleep(0)  # not long enough to trigger the age timeout
-        self.assertEquals(len(self.pool.free_items), 1)
+        self.assertEqual(len(self.pool.free_items), 1)
         api.sleep(0.2) # long enough to trigger age timeout
-        self.assertEquals(len(self.pool.free_items), 0)
+        self.assertEqual(len(self.pool.free_items), 0)
         conn2.close()  # should not be added to the free items
-        self.assertEquals(len(self.pool.free_items), 0)
+        self.assertEqual(len(self.pool.free_items), 0)
 
     def test_connection_timeout(self):
         # use a nonexistent ip address -- this one is reserved by IANA
@@ -382,8 +382,8 @@ class TestDBConnectionPool(DBTester):
         self.pool = self.create_pool(max_size=1, max_age=0)
         
         conn = self.pool.get()
-        self.assertEquals(self.pool.free(), 0)
-        self.assertEquals(self.pool.waiting(), 0)
+        self.assertEqual(self.pool.free(), 0)
+        self.assertEqual(self.pool.waiting(), 0)
         e = coros.event()
         def retrieve(pool, ev):
             c = pool.get()
@@ -391,14 +391,14 @@ class TestDBConnectionPool(DBTester):
         api.spawn(retrieve, self.pool, e)
         api.sleep(0) # these two sleeps should advance the retrieve
         api.sleep(0) # coroutine until it's waiting in get()
-        self.assertEquals(self.pool.free(), 0)
-        self.assertEquals(self.pool.waiting(), 1)
+        self.assertEqual(self.pool.free(), 0)
+        self.assertEqual(self.pool.waiting(), 1)
         self.pool.put(conn)
         timer = api.exc_after(0.3, api.TimeoutError)
         conn = e.wait()
         timer.cancel()
-        self.assertEquals(self.pool.free(), 0)
-        self.assertEquals(self.pool.waiting(), 0)
+        self.assertEqual(self.pool.free(), 0)
+        self.assertEqual(self.pool.waiting(), 0)
 
     def dont_test_0_straight_benchmark(self):
         """ Benchmark; don't run unless you want to wait a while."""
@@ -407,26 +407,26 @@ class TestDBConnectionPool(DBTester):
         c = self.connection.cursor()
         self.connection.commit()
         def bench(c):
-            for i in xrange(iterations):
+            for i in range(iterations):
                 c.execute('select 1')
                 
         bench(c)  # warm-up
         results = []
-        for i in xrange(3):
+        for i in range(3):
             start = time.time()
             bench(c)
             end = time.time()
             results.append(end-start)
             
-        print "\n%u iterations took an average of %f seconds, (%s) in %s\n" % (
-            iterations, sum(results)/len(results), results, type(self))
+        print("\n%u iterations took an average of %f seconds, (%s) in %s\n" % (
+            iterations, sum(results)/len(results), results, type(self)))
 
     def test_raising_create(self):
         # if the create() method raises an exception the pool should
         # not lose any connections
         self.pool = self.create_pool(max_size=1, module=RaisingDBModule())
         self.assertRaises(RuntimeError, self.pool.get)
-        self.assertEquals(self.pool.free(), 1)
+        self.assertEqual(self.pool.free(), 1)
                         
 
 class RaisingDBModule(object):
@@ -485,8 +485,8 @@ class TestMysqlConnectionPool(object):
             auth_utf8 = simplejson.load(open(os.path.join(os.path.dirname(__file__), 'auth.json')))
             # have to convert unicode objects to str objects because mysqldb is dum
             self._auth = dict([(str(k), str(v))
-                         for k, v in auth_utf8.items()])
-        except (IOError, ImportError), e:
+                         for k, v in list(auth_utf8.items())])
+        except (IOError, ImportError) as e:
             self._auth = {'host': 'localhost','user': 'root','passwd': '','db': 'persist0'}
         super(TestMysqlConnectionPool, self).setUp()
         
@@ -527,7 +527,7 @@ if __name__ == '__main__':
     try:
         import MySQLdb
     except ImportError:
-        print "Unable to import MySQLdb, skipping db_pool_test."
+        print("Unable to import MySQLdb, skipping db_pool_test.")
     else:
         main()
 else:

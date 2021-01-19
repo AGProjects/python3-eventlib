@@ -25,14 +25,14 @@ import errno
 import socket
 import sys
 import time
-import urllib
+import urllib.request, urllib.parse, urllib.error
 import traceback
-import BaseHTTPServer
+import http.server
 
 try:
-    from cStringIO import StringIO
+    from io import StringIO
 except ImportError:
-    from StringIO import StringIO
+    from io import StringIO
 
 from eventlib import api
 from eventlib.pool import Pool
@@ -47,7 +47,7 @@ CONNECTION_CLOSED = (errno.EPIPE, errno.ECONNRESET)
 
 
 class ErrorResponse(Exception):
-    _responses = BaseHTTPServer.BaseHTTPRequestHandler.responses
+    _responses = http.server.BaseHTTPRequestHandler.responses
 
     def __init__(self, code, reason_phrase=None, headers=None, body=None):
         Exception.__init__(self, reason_phrase)
@@ -96,7 +96,7 @@ class Request(object):
         self.protocol.set_response_code(self, code, reason_phrase)
         if headers is not None:
             try:
-                headers = headers.iteritems()
+                headers = iter(headers.items())
             except AttributeError:
                 pass
             for key, value in headers:
@@ -115,7 +115,7 @@ class Request(object):
 
         via = self.get_header('via', '')
         if via.strip():
-            next_part = iter(via.split()).next
+            next_part = iter(via.split()).__next__
 
             received_protocol = next_part()
             received_by = next_part()
@@ -164,14 +164,14 @@ class Request(object):
 
         response_lines = proto.generate_status_line()
 
-        if not self._outgoing_headers.has_key('connection'):
+        if 'connection' not in self._outgoing_headers:
             con = self.get_header('connection')
             if con is None and proto.request_version == 'HTTP/1.0':
                 con = 'close'
             if con is not None:
                 self.set_header('connection', con)
 
-        for key, value in self._outgoing_headers.items():
+        for key, value in list(self._outgoing_headers.items()):
             key = '-'.join([x.capitalize() for x in key.split('-')])
             response_lines.append("%s: %s" % (key, value))
 
@@ -184,7 +184,7 @@ class Request(object):
         """
         if isinstance(obj, str):
             self._write_bytes(obj)
-        elif isinstance(obj, unicode):
+        elif isinstance(obj, str):
             # use utf8 encoding for now, *TODO support charset negotiation
             # Content-Type: text/html; charset=utf-8
             ctype = self._outgoing_headers.get('content-type', 'text/html')
@@ -199,7 +199,7 @@ class Request(object):
         Can be called just once.
         """
         if self._request_started:
-            print "Request has already written a response:"
+            print("Request has already written a response:")
             traceback.print_stack()
             return
 
@@ -218,7 +218,7 @@ class Request(object):
         return self._path
 
     def path_segments(self):
-        return [urllib.unquote_plus(x) for x in self._path.split('/')[1:]]
+        return [urllib.parse.unquote_plus(x) for x in self._path.split('/')[1:]]
 
     def query(self):
         return self._query
@@ -249,7 +249,7 @@ class Request(object):
                         value = ''
                     else:
                         key, value = query
-                    self._split_query.append((urllib.unquote_plus(key), urllib.unquote_plus(value)))
+                    self._split_query.append((urllib.parse.unquote_plus(key), urllib.parse.unquote_plus(value)))
 
         return self._split_query
 
@@ -264,7 +264,7 @@ class Request(object):
 
     def get_query(self, name, default=None):
         try:
-            return self.get_queries_generator(name).next()
+            return next(self.get_queries_generator(name))
         except StopIteration:
             return default
 
@@ -304,7 +304,7 @@ class Request(object):
         return self._outgoing_headers[key.lower()]
 
     def has_outgoing_header(self, key):
-        return self._outgoing_headers.has_key(key.lower())
+        return key.lower() in self._outgoing_headers
 
     def socket(self):
         return self.protocol.rfile._sock
@@ -323,7 +323,7 @@ class Request(object):
             return
         try:
             self.site.adapt(body, self)
-        except Exception, e:
+        except Exception as e:
             traceback.print_exc(file=self.log)
             if not self.response_written():
                 self.write('Internal Server Error')
@@ -411,7 +411,7 @@ MAX_REQUEST_LINE = 8192
 class Timeout(RuntimeError):
     pass
 
-class HttpProtocol(BaseHTTPServer.BaseHTTPRequestHandler):
+class HttpProtocol(http.server.BaseHTTPRequestHandler):
     def __init__(self, request, client_address, server):
         self.rfile = self.wfile = request.makefile()
         self.is_secure = request.is_secure
@@ -463,7 +463,7 @@ class HttpProtocol(BaseHTTPServer.BaseHTTPRequestHandler):
                         self.write_bad_request(414, 'Request-URI Too Long')
                         self.close_connection = True
                         continue
-            except socket.error, e:
+            except socket.error as e:
                 if e[0] in CONNECTION_CLOSED:
                     self.close_connection = True
                     cancel.cancel()
@@ -471,15 +471,15 @@ class HttpProtocol(BaseHTTPServer.BaseHTTPRequestHandler):
             except Timeout:
                 self.close_connection = True
                 continue
-            except Exception, e:
+            except Exception as e:
                 try:
                     if e[0][0][0].startswith('SSL'):
-                        print "SSL Error:", e[0][0]
+                        print("SSL Error:", e[0][0])
                         self.close_connection = True
                         cancel.cancel()
                         continue
-                except Exception, f:
-                    print "Exception in ssl test:",f
+                except Exception as f:
+                    print("Exception in ssl test:",f)
                     pass
                 raise e
             cancel.cancel()
@@ -494,14 +494,14 @@ class HttpProtocol(BaseHTTPServer.BaseHTTPRequestHandler):
             request.set_header('Date', self.date_time_string())
             try:
                 timeout = int(request.get_header('keep-alive', timeout))
-            except TypeError, ValueError:
+            except TypeError as ValueError:
                 pass
 
             try:
                 try:
                     try:
                         self.server.site.handle_request(request)
-                    except ErrorResponse, err:
+                    except ErrorResponse as err:
                         request.response(code=err.code,
                                          reason_phrase=err.reason,
                                          headers=err.headers,
@@ -521,14 +521,14 @@ class HttpProtocol(BaseHTTPServer.BaseHTTPRequestHandler):
                     except:
                         pass
 
-            except socket.error, e:
+            except socket.error as e:
                 # Broken pipe, connection reset by peer
                 if e[0] in CONNECTION_CLOSED:
                     #print "Remote host closed connection before response could be sent"
                     pass
                 else:
                     raise
-            except Exception, e:
+            except Exception as e:
                 self.server.log_message("Exception caught in HttpRequest.handle():\n")
                 self.server.log_exception(*sys.exc_info())
                 if not request.response_written():
@@ -539,7 +539,7 @@ class HttpProtocol(BaseHTTPServer.BaseHTTPRequestHandler):
         self.close()
 
 
-class Server(BaseHTTPServer.HTTPServer):
+class Server(http.server.HTTPServer):
     def __init__(self, socket, address, site, log, max_http_version=DEFAULT_MAX_HTTP_VERSION):
         self.socket = socket
         self.address = address

@@ -7,7 +7,7 @@ from eventlib.green import socket
 from eventlib.green import select
 from eventlib.green import time
 from eventlib.green import thread, threading
-import Queue
+import queue
 import sys
 import array
 from weakref import proxy
@@ -98,7 +98,7 @@ class ThreadableTest:
         self.server_ready = threading.Event()
         self.client_ready = threading.Event()
         self.done = threading.Event()
-        self.queue = Queue.Queue(1)
+        self.queue = queue.Queue(1)
 
         # Do some munging to start the client test.
         methodname = self.id()
@@ -126,15 +126,15 @@ class ThreadableTest:
         self.client_ready.set()
         self.clientSetUp()
         if not callable(test_func):
-            raise TypeError, "test_func must be a callable function"
+            raise TypeError("test_func must be a callable function")
         try:
             test_func()
-        except Exception, strerror:
+        except Exception as strerror:
             self.queue.put(strerror)
         self.clientTearDown()
 
     def clientSetUp(self):
-        raise NotImplementedError, "clientSetUp must be implemented."
+        raise NotImplementedError("clientSetUp must be implemented.")
 
     def clientTearDown(self):
         self.done.set()
@@ -239,11 +239,11 @@ class GeneralModuleTests(unittest.TestCase):
             raise socket.herror
         def raise_gaierror(*args, **kwargs):
             raise socket.gaierror
-        self.failUnlessRaises(socket.error, raise_error,
+        self.assertRaises(socket.error, raise_error,
                               "Error raising socket exception.")
-        self.failUnlessRaises(socket.error, raise_herror,
+        self.assertRaises(socket.error, raise_herror,
                               "Error raising socket exception.")
-        self.failUnlessRaises(socket.error, raise_gaierror,
+        self.assertRaises(socket.error, raise_gaierror,
                               "Error raising socket exception.")
 
     def testCrucialConstants(self):
@@ -265,7 +265,7 @@ class GeneralModuleTests(unittest.TestCase):
         except socket.error:
             # Probably name lookup wasn't set up right; skip this test
             return
-        self.assert_(ip.find('.') >= 0, "Error resolving host to ip.")
+        self.assertTrue(ip.find('.') >= 0, "Error resolving host to ip.")
         try:
             hname, aliases, ipaddrs = socket.gethostbyaddr(ip)
         except socket.error:
@@ -285,7 +285,7 @@ class GeneralModuleTests(unittest.TestCase):
                 orig = sys.getrefcount(__name__)
                 socket.getnameinfo(__name__,0)
             except SystemError:
-                if sys.getrefcount(__name__) <> orig:
+                if sys.getrefcount(__name__) != orig:
                     self.fail("socket.getnameinfo loses a reference")
 
     def testInterpreterCrash(self):
@@ -301,14 +301,14 @@ class GeneralModuleTests(unittest.TestCase):
         # when looking at the lower 16 or 32 bits.
         sizes = {socket.htonl: 32, socket.ntohl: 32,
                  socket.htons: 16, socket.ntohs: 16}
-        for func, size in sizes.items():
-            mask = (1L<<size) - 1
+        for func, size in list(sizes.items()):
+            mask = (1<<size) - 1
             for i in (0, 1, 0xffff, ~0xffff, 2, 0x01234567, 0x76543210):
                 self.assertEqual(i & mask, func(func(i&mask)) & mask)
 
             swapped = func(mask)
             self.assertEqual(swapped & mask, mask)
-            self.assertRaises(OverflowError, func, 1L<<34)
+            self.assertRaises(OverflowError, func, 1<<34)
 
     def testGetServBy(self):
         eq = self.assertEqual
@@ -380,16 +380,16 @@ class GeneralModuleTests(unittest.TestCase):
         from socket import inet_aton as f, inet_pton, AF_INET
         g = lambda a: inet_pton(AF_INET, a)
 
-        self.assertEquals('\x00\x00\x00\x00', f('0.0.0.0'))
-        self.assertEquals('\xff\x00\xff\x00', f('255.0.255.0'))
-        self.assertEquals('\xaa\xaa\xaa\xaa', f('170.170.170.170'))
-        self.assertEquals('\x01\x02\x03\x04', f('1.2.3.4'))
-        self.assertEquals('\xff\xff\xff\xff', f('255.255.255.255'))
+        self.assertEqual('\x00\x00\x00\x00', f('0.0.0.0'))
+        self.assertEqual('\xff\x00\xff\x00', f('255.0.255.0'))
+        self.assertEqual('\xaa\xaa\xaa\xaa', f('170.170.170.170'))
+        self.assertEqual('\x01\x02\x03\x04', f('1.2.3.4'))
+        self.assertEqual('\xff\xff\xff\xff', f('255.255.255.255'))
 
-        self.assertEquals('\x00\x00\x00\x00', g('0.0.0.0'))
-        self.assertEquals('\xff\x00\xff\x00', g('255.0.255.0'))
-        self.assertEquals('\xaa\xaa\xaa\xaa', g('170.170.170.170'))
-        self.assertEquals('\xff\xff\xff\xff', g('255.255.255.255'))
+        self.assertEqual('\x00\x00\x00\x00', g('0.0.0.0'))
+        self.assertEqual('\xff\x00\xff\x00', g('255.0.255.0'))
+        self.assertEqual('\xaa\xaa\xaa\xaa', g('170.170.170.170'))
+        self.assertEqual('\xff\xff\xff\xff', g('255.255.255.255'))
 
     def testIPv6toString(self):
         if not hasattr(socket, 'inet_pton'):
@@ -402,10 +402,10 @@ class GeneralModuleTests(unittest.TestCase):
             return
         f = lambda a: inet_pton(AF_INET6, a)
 
-        self.assertEquals('\x00' * 16, f('::'))
-        self.assertEquals('\x00' * 16, f('0::0'))
-        self.assertEquals('\x00\x01' + '\x00' * 14, f('1::'))
-        self.assertEquals(
+        self.assertEqual('\x00' * 16, f('::'))
+        self.assertEqual('\x00' * 16, f('0::0'))
+        self.assertEqual('\x00\x01' + '\x00' * 14, f('1::'))
+        self.assertEqual(
             '\x45\xef\x76\xcb\x00\x1a\x56\xef\xaf\xeb\x0b\xac\x19\x24\xae\xae',
             f('45ef:76cb:1a:56ef:afeb:bac:1924:aeae')
         )
@@ -416,14 +416,14 @@ class GeneralModuleTests(unittest.TestCase):
         from socket import inet_ntoa as f, inet_ntop, AF_INET
         g = lambda a: inet_ntop(AF_INET, a)
 
-        self.assertEquals('1.0.1.0', f('\x01\x00\x01\x00'))
-        self.assertEquals('170.85.170.85', f('\xaa\x55\xaa\x55'))
-        self.assertEquals('255.255.255.255', f('\xff\xff\xff\xff'))
-        self.assertEquals('1.2.3.4', f('\x01\x02\x03\x04'))
+        self.assertEqual('1.0.1.0', f('\x01\x00\x01\x00'))
+        self.assertEqual('170.85.170.85', f('\xaa\x55\xaa\x55'))
+        self.assertEqual('255.255.255.255', f('\xff\xff\xff\xff'))
+        self.assertEqual('1.2.3.4', f('\x01\x02\x03\x04'))
 
-        self.assertEquals('1.0.1.0', g('\x01\x00\x01\x00'))
-        self.assertEquals('170.85.170.85', g('\xaa\x55\xaa\x55'))
-        self.assertEquals('255.255.255.255', g('\xff\xff\xff\xff'))
+        self.assertEqual('1.0.1.0', g('\x01\x00\x01\x00'))
+        self.assertEqual('170.85.170.85', g('\xaa\x55\xaa\x55'))
+        self.assertEqual('255.255.255.255', g('\xff\xff\xff\xff'))
 
     def testStringToIPv6(self):
         if not hasattr(socket, 'inet_ntop'):
@@ -436,9 +436,9 @@ class GeneralModuleTests(unittest.TestCase):
             return
         f = lambda a: inet_ntop(AF_INET6, a)
 
-        self.assertEquals('::', f('\x00' * 16))
-        self.assertEquals('::1', f('\x00' * 15 + '\x01'))
-        self.assertEquals(
+        self.assertEqual('::', f('\x00' * 16))
+        self.assertEqual('::1', f('\x00' * 15 + '\x01'))
+        self.assertEqual(
             'aef:b01:506:1001:ffff:9997:55:170',
             f('\x0a\xef\x0b\x01\x05\x06\x10\x01\xff\xff\x99\x97\x00\x55\x01\x70')
         )
@@ -454,7 +454,7 @@ class GeneralModuleTests(unittest.TestCase):
         # it reasonable to get the host's addr in addition to 0.0.0.0.
         # At least for eCos.  This is required for the S/390 to pass.
         my_ip_addr = socket.gethostbyname(socket.gethostname())
-        self.assert_(name[0] in ("0.0.0.0", my_ip_addr), '%s invalid' % name[0])
+        self.assertTrue(name[0] in ("0.0.0.0", my_ip_addr), '%s invalid' % name[0])
         self.assertEqual(name[1], PORT+1)
 
     def testGetSockOpt(self):
@@ -462,14 +462,14 @@ class GeneralModuleTests(unittest.TestCase):
         # We know a socket should start without reuse==0
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         reuse = sock.getsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR)
-        self.failIf(reuse != 0, "initial mode is reuse")
+        self.assertFalse(reuse != 0, "initial mode is reuse")
 
     def testSetSockOpt(self):
         # Testing setsockopt()
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         reuse = sock.getsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR)
-        self.failIf(reuse == 0, "failed to set reuse mode")
+        self.assertFalse(reuse == 0, "failed to set reuse mode")
 
     def testSendAfterClose(self):
         # testing send() after close() with timeout
@@ -638,7 +638,7 @@ class NonBlockingTCPTests(ThreadedTCPSocketTest):
         except socket.error:
             pass
         end = time.time()
-        self.assert_((end - start) < 1.0, "Error setting non-blocking mode.")
+        self.assertTrue((end - start) < 1.0, "Error setting non-blocking mode.")
 
     def _testSetBlocking(self):
         pass
@@ -705,7 +705,7 @@ class FileObjectClassTestCase(SocketConnectedTest):
 
     def tearDown(self):
         self.serv_file.close()
-        self.assert_(self.serv_file.closed)
+        self.assertTrue(self.serv_file.closed)
         self.serv_file = None
         SocketConnectedTest.tearDown(self)
 
@@ -715,7 +715,7 @@ class FileObjectClassTestCase(SocketConnectedTest):
 
     def clientTearDown(self):
         self.cli_file.close()
-        self.assert_(self.cli_file.closed)
+        self.assertTrue(self.cli_file.closed)
         self.cli_file = None
         SocketConnectedTest.clientTearDown(self)
 
@@ -790,10 +790,10 @@ class FileObjectClassTestCase(SocketConnectedTest):
         self.cli_file.write("End Of Line")
 
     def testClosedAttr(self):
-        self.assert_(not self.serv_file.closed)
+        self.assertTrue(not self.serv_file.closed)
 
     def _testClosedAttr(self):
-        self.assert_(not self.cli_file.closed)
+        self.assertTrue(not self.cli_file.closed)
 
 class UnbufferedFileObjectClassTestCase(FileObjectClassTestCase):
 
@@ -847,12 +847,12 @@ class Urllib2FileobjectTest(unittest.TestCase):
         s = MockSocket()
         f = socket._fileobject(s)
         f.close()
-        self.assert_(not s.closed)
+        self.assertTrue(not s.closed)
 
         s = MockSocket()
         f = socket._fileobject(s, close=True)
         f.close()
-        self.assert_(s.closed)
+        self.assertTrue(s.closed)
 
 class TCPTimeoutTest(SocketTCPTest):
 
@@ -860,7 +860,7 @@ class TCPTimeoutTest(SocketTCPTest):
         def raise_timeout(*args, **kwargs):
             self.serv.settimeout(1.0)
             self.serv.accept()
-        self.failUnlessRaises(socket.timeout, raise_timeout,
+        self.assertRaises(socket.timeout, raise_timeout,
                               "Error generating a timeout exception (TCP)")
 
     def testTimeoutZero(self):
@@ -922,7 +922,7 @@ class UDPTimeoutTest(SocketUDPTest):
         def raise_timeout(*args, **kwargs):
             self.serv.settimeout(1.0)
             self.serv.recv(1024)
-        self.failUnlessRaises(socket.timeout, raise_timeout,
+        self.assertRaises(socket.timeout, raise_timeout,
                               "Error generating a timeout exception (UDP)")
 
     def testTimeoutZero(self):
@@ -942,10 +942,10 @@ class UDPTimeoutTest(SocketUDPTest):
 class TestExceptions(unittest.TestCase):
 
     def testExceptionTree(self):
-        self.assert_(issubclass(socket.error, Exception))
-        self.assert_(issubclass(socket.herror, socket.error))
-        self.assert_(issubclass(socket.gaierror, socket.error))
-        self.assert_(issubclass(socket.timeout, socket.error))
+        self.assertTrue(issubclass(socket.error, Exception))
+        self.assertTrue(issubclass(socket.herror, socket.error))
+        self.assertTrue(issubclass(socket.gaierror, socket.error))
+        self.assertTrue(issubclass(socket.timeout, socket.error))
 
 class TestLinuxAbstractNamespace(unittest.TestCase):
 

@@ -28,9 +28,9 @@ from eventlib import wsgi
 
 import time
 try:
-    from cStringIO import StringIO
+    from io import StringIO
 except ImportError:
-    from StringIO import StringIO
+    from io import StringIO
 
 
 class Site(object):
@@ -43,7 +43,7 @@ class Site(object):
 
 def _get_query_pairs(env):
     parsed = cgi.parse_qs(env['QUERY_STRING'])
-    for key, values in parsed.items():
+    for key, values in list(parsed.items()):
         for val in values:
             yield key, val
 
@@ -132,37 +132,37 @@ class TestHttpc(TestBase, TestCase):
 
     def test_get(self):
         response = httpc.get(self.base_url() + 'hello')
-        self.assertEquals(response, 'hello world')
+        self.assertEqual(response, 'hello world')
 
     def test_get_(self):
         status, msg, body = httpc.get_(self.base_url() + 'hello')
-        self.assertEquals(status, 200)
-        self.assertEquals(msg.dict['x-get'], 'hello')
-        self.assertEquals(body, 'hello world')
+        self.assertEqual(status, 200)
+        self.assertEqual(msg.dict['x-get'], 'hello')
+        self.assertEqual(body, 'hello world')
 
     def test_get_query(self):
         response = httpc.get(self.base_url() + 'hello?foo=bar&foo=quux')
-        self.assertEquals(response, 'hello worldfoo=bar\nfoo=quux\n')
+        self.assertEqual(response, 'hello worldfoo=bar\nfoo=quux\n')
 
     def test_head_(self):
         status, msg, body = httpc.head_(self.base_url() + 'hello')
-        self.assertEquals(status, 200)
-        self.assertEquals(msg.dict['x-head'], 'hello')
-        self.assertEquals(body, '')
+        self.assertEqual(status, 200)
+        self.assertEqual(msg.dict['x-head'], 'hello')
+        self.assertEqual(body, '')
 
     def test_head(self):
-        self.assertEquals(httpc.head(self.base_url() + 'hello'), '')
+        self.assertEqual(httpc.head(self.base_url() + 'hello'), '')
 
     def test_post_(self):
         data = 'qunge'
         status, msg, body = httpc.post_(self.base_url() + '', data=data)
-        self.assertEquals(status, 200)
-        self.assertEquals(msg.dict['x-post'], 'hello')
-        self.assertEquals(body, data)
+        self.assertEqual(status, 200)
+        self.assertEqual(msg.dict['x-post'], 'hello')
+        self.assertEqual(body, data)
 
     def test_post(self):
         data = 'qunge'
-        self.assertEquals(httpc.post(self.base_url() + '', data=data),
+        self.assertEqual(httpc.post(self.base_url() + '', data=data),
                           data)
 
     def test_put_bad_uri(self):
@@ -172,40 +172,40 @@ class TestHttpc(TestBase, TestCase):
 
     def test_put_empty(self):
         httpc.put(self.base_url() + 'empty', data='')
-        self.assertEquals(httpc.get(self.base_url() + 'empty'), '')
+        self.assertEqual(httpc.get(self.base_url() + 'empty'), '')
 
     def test_put_nonempty(self):
         data = 'nonempty'
         httpc.put(self.base_url() + 'nonempty', data=data)
-        self.assertEquals(httpc.get(self.base_url() + 'nonempty'), data)
+        self.assertEqual(httpc.get(self.base_url() + 'nonempty'), data)
 
     def test_put_01_create(self):
         data = 'goodbye world'
         status, msg, body = httpc.put_(self.base_url() + 'goodbye',
                                        data=data)
-        self.assertEquals(status, 201)
-        self.assertEquals(msg.dict['x-put'], 'hello')
-        self.assertEquals(body, '')
-        self.assertEquals(httpc.get(self.base_url() + 'goodbye'), data)
+        self.assertEqual(status, 201)
+        self.assertEqual(msg.dict['x-put'], 'hello')
+        self.assertEqual(body, '')
+        self.assertEqual(httpc.get(self.base_url() + 'goodbye'), data)
 
     def test_put_02_modify(self):
         self.test_put_01_create()
         data = 'i really mean goodbye'
         status = httpc.put_(self.base_url() + 'goodbye', data=data)[0]
-        self.assertEquals(status, 204)
-        self.assertEquals(httpc.get(self.base_url() + 'goodbye'), data)
+        self.assertEqual(status, 204)
+        self.assertEqual(httpc.get(self.base_url() + 'goodbye'), data)
 
     def test_delete_(self):
         httpc.put(self.base_url() + 'killme', data='killme')
         status, msg, body = httpc.delete_(self.base_url() + 'killme')
-        self.assertEquals(status, 204)
+        self.assertEqual(status, 204)
         self.assertRaises(
             httpc.NotFound,
             lambda: httpc.get(self.base_url() + 'killme'))
 
     def test_delete(self):
         httpc.put(self.base_url() + 'killme', data='killme')
-        self.assertEquals(httpc.delete(self.base_url() + 'killme'), '')
+        self.assertEqual(httpc.delete(self.base_url() + 'killme'), '')
         self.assertRaises(
             httpc.NotFound,
             lambda: httpc.get(self.base_url() + 'killme'))
@@ -266,20 +266,20 @@ class TestHttpc301(TestBase, TestCase):
     def test_get(self):
         try:
             httpc.get(self.base_url() + 'hello', max_retries=0)
-            self.assert_(False)
-        except httpc.MovedPermanently, err:
+            self.assertTrue(False)
+        except httpc.MovedPermanently as err:
             response = err.retry()
-        self.assertEquals(response, 'hello world')
-        self.assertEquals(httpc.get(self.base_url() + 'hello', max_retries=1), 'hello world')
+        self.assertEqual(response, 'hello world')
+        self.assertEqual(httpc.get(self.base_url() + 'hello', max_retries=1), 'hello world')
 
     def test_post(self):
         data = 'qunge'
         try:
             response = httpc.post(self.base_url() + '', data=data)
-            self.assert_(False)
-        except httpc.MovedPermanently, err:
+            self.assertTrue(False)
+        except httpc.MovedPermanently as err:
             response = err.retry()
-        self.assertEquals(response, data)
+        self.assertEqual(response, data)
 
 
 class TestHttpc302(TestBase, TestCase):
@@ -288,20 +288,20 @@ class TestHttpc302(TestBase, TestCase):
     def test_get_expired(self):
         try:
             httpc.get(self.base_url() + 'expired/hello', max_retries=0)
-            self.assert_(False)
-        except httpc.Found, err:
+            self.assertTrue(False)
+        except httpc.Found as err:
             response = err.retry()
-        self.assertEquals(response, 'hello world')
-        self.assertEquals(httpc.get(self.base_url() + 'expired/hello', max_retries=1), 'hello world')
+        self.assertEqual(response, 'hello world')
+        self.assertEqual(httpc.get(self.base_url() + 'expired/hello', max_retries=1), 'hello world')
 
     def test_get_expires(self):
         try:
             httpc.get(self.base_url() + 'expires/hello', max_retries=0)
-            self.assert_(False)
-        except httpc.Found, err:
+            self.assertTrue(False)
+        except httpc.Found as err:
             response = err.retry()
-        self.assertEquals(response, 'hello world')
-        self.assertEquals(httpc.get(self.base_url() + 'expires/hello', max_retries=1), 'hello world')
+        self.assertEqual(response, 'hello world')
+        self.assertEqual(httpc.get(self.base_url() + 'expires/hello', max_retries=1), 'hello world')
 
 
 class TestHttpc303(TestBase, TestCase):
@@ -314,10 +314,10 @@ class TestHttpc303(TestBase, TestCase):
         data = 'hello world'
         try:
             response = httpc.post(self.base_url() + 'hello', data=data)
-            self.assert_(False)
-        except httpc.SeeOther, err:
+            self.assertTrue(False)
+        except httpc.SeeOther as err:
             response = err.retry()
-        self.assertEquals(response, data)
+        self.assertEqual(response, data)
 
 
 class TestHttpc307(TestBase, TestCase):
@@ -330,10 +330,10 @@ class TestHttpc307(TestBase, TestCase):
         data = 'hello world'
         try:
             response = httpc.post(self.base_url() + 'hello', data=data)
-            self.assert_(False)
-        except httpc.TemporaryRedirect, err:
+            self.assertTrue(False)
+        except httpc.TemporaryRedirect as err:
             response = err.retry()
-        self.assertEquals(response, data)
+        self.assertEqual(response, data)
 
 
 class Site500(BasicSite):
@@ -353,10 +353,10 @@ class TestHttpc500(TestBase, TestCase):
         try:
             response = httpc.get(self.base_url())
             self.fail()
-        except httpc.InternalServerError, e:
-            self.assertEquals(e.params.response_body, data)
-            self.assert_(str(e).count(data))
-            self.assert_(repr(e).count(data))
+        except httpc.InternalServerError as e:
+            self.assertEqual(e.params.response_body, data)
+            self.assertTrue(str(e).count(data))
+            self.assertTrue(repr(e).count(data))
 
 
 class Site504(BasicSite):

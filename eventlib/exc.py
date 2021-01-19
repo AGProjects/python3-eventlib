@@ -43,9 +43,9 @@ def format_exc(exc=None):
             f.f_code.co_filename,
             exc_tb.tb_lineno,
             [(key, value) for (key, value)
-             in f.f_locals.items() if key != '__builtins__'],
+             in list(f.f_locals.items()) if key != '__builtins__'],
             [(key, value) for (key, value)
-             in f.f_globals.items() if key != '__builtins__']))
+             in list(f.f_globals.items()) if key != '__builtins__']))
         exc_tb = exc_tb.tb_next
 
     stack_trace = []
@@ -81,7 +81,7 @@ def format_exc(exc=None):
         for name, var in local_vars:
             if name == 'self' and hasattr(var, '__dict__'):
                 vars_dict['self'] = dict([
-                    (key, value) for (key, value) in var.__dict__.items()
+                    (key, value) for (key, value) in list(var.__dict__.items())
                     if re.search(
                         r'\Wself.%s\W' % (re.escape(key),), code_text)])
                 break

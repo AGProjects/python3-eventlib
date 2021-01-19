@@ -73,7 +73,7 @@ class Pool(object):
         self.current_size = 0
         self.channel = coros.queue(0)
         self.free_items = collections.deque()
-        for x in xrange(min_size):
+        for x in range(min_size):
             self.current_size += 1
             self.free_items.append(self.create())
 
@@ -156,7 +156,7 @@ class Pool(object):
     def _invoke(self, block, pool_item, input_item, index, queue):
         try:
             result = block(pool_item, input_item)
-        except Exception, e:
+        except Exception as e:
             self.put(pool_item)
             queue.send((index, e))
             return
@@ -195,7 +195,7 @@ class ConnectionPool(Pool):
         Pool.__init__(self, min_size, max_size)
 
     def create(self):
-        import httpc
+        from . import httpc
         return httpc.make_connection(self.proto, self.netloc, self.use_proxy)
 
     def put(self, item):

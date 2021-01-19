@@ -1,7 +1,7 @@
 """Supporting definitions for the Python regression tests."""
 
 if __name__ != 'greentest.test_support':
-    raise ImportError, 'test_support must be imported from the test package'
+    raise ImportError('test_support must be imported from the test package')
 
 import sys
 
@@ -111,12 +111,12 @@ def bind_port(sock, host='', preferred_port=54321):
             if port == 0:
                 port = sock.getsockname()[1]
             return port
-        except socket.error, (err, msg):
+        except socket.error as xxx_todo_changeme:
+            (err, msg) = xxx_todo_changeme.args
             if err != errno.EADDRINUSE:
                 raise
-            print >>sys.__stderr__, \
-                '  WARNING: failed to listen on port %d, trying another' % port
-    raise TestFailed, 'unable to find port to listen on'
+            print('  WARNING: failed to listen on port %d, trying another' % port, file=sys.__stderr__)
+    raise TestFailed('unable to find port to listen on')
 
 FUZZ = 1e-6
 
@@ -138,7 +138,7 @@ def fcmp(x, y): # fuzzy comparison function
     return cmp(x, y)
 
 try:
-    unicode
+    str
     have_unicode = 1
 except NameError:
     have_unicode = 0
@@ -159,13 +159,13 @@ else:
         # Assuming sys.getfilesystemencoding()!=sys.getdefaultencoding()
         # TESTFN_UNICODE is a filename that can be encoded using the
         # file system encoding, but *not* with the default (ascii) encoding
-        if isinstance('', unicode):
+        if isinstance('', str):
             # python -U
             # XXX perhaps unicode() should accept Unicode strings?
             TESTFN_UNICODE = "@test-\xe0\xf2"
         else:
             # 2 latin characters.
-            TESTFN_UNICODE = unicode("@test-\xe0\xf2", "latin-1")
+            TESTFN_UNICODE = str("@test-\xe0\xf2", "latin-1")
         TESTFN_ENCODING = sys.getfilesystemencoding()
         # TESTFN_UNICODE_UNENCODEABLE is a filename that should *not* be
         # able to be encoded by *either* the default or filesystem encoding.
@@ -176,7 +176,7 @@ else:
             TESTFN_UNICODE_UNENCODEABLE = None
         else:
             # Japanese characters (I think - from bug 846133)
-            TESTFN_UNICODE_UNENCODEABLE = eval('u"@test-\u5171\u6709\u3055\u308c\u308b"')
+            TESTFN_UNICODE_UNENCODEABLE = eval('u"@test-\\u5171\\u6709\\u3055\\u308c\\u308b"')
             try:
                 # XXX - Note - should be using TESTFN_ENCODING here - but for
                 # Windows, "mbcs" currently always operates as if in
@@ -187,10 +187,9 @@ else:
             except UnicodeEncodeError:
                 pass
             else:
-                print \
-                'WARNING: The filename %r CAN be encoded by the filesystem.  ' \
+                print('WARNING: The filename %r CAN be encoded by the filesystem.  ' \
                 'Unicode filename tests may not be effective' \
-                % TESTFN_UNICODE_UNENCODEABLE
+                % TESTFN_UNICODE_UNENCODEABLE)
 
 # Make sure we can write to TESTFN, try in /tmp if we can't
 fp = None
@@ -203,8 +202,8 @@ except IOError:
         TESTFN = TMP_TESTFN
         del TMP_TESTFN
     except IOError:
-        print ('WARNING: tests will fail, unable to write to: %s or %s' %
-                (TESTFN, TMP_TESTFN))
+        print(('WARNING: tests will fail, unable to write to: %s or %s' %
+                (TESTFN, TMP_TESTFN)))
 if fp is not None:
     fp.close()
     unlink(TESTFN)
@@ -246,11 +245,11 @@ def vereq(a, b):
     """
 
     if not (a == b):
-        raise TestFailed, "%r == %r" % (a, b)
+        raise TestFailed("%r == %r" % (a, b))
 
 def sortdict(dict):
     "Like repr(dict), but in sorted order."
-    items = dict.items()
+    items = list(dict.items())
     items.sort()
     reprpairs = ["%r: %r" % pair for pair in items]
     withcommas = ", ".join(reprpairs)
@@ -262,13 +261,13 @@ def check_syntax(statement):
     except SyntaxError:
         pass
     else:
-        print 'Missing SyntaxError: "%s"' % statement
+        print('Missing SyntaxError: "%s"' % statement)
 
 def open_urlresource(url):
-    import urllib, urlparse
+    import urllib.request, urllib.parse, urllib.error, urllib.parse
     import os.path
 
-    filename = urlparse.urlparse(url)[2].split('/')[-1] # '/': it's URL!
+    filename = urllib.parse.urlparse(url)[2].split('/')[-1] # '/': it's URL!
 
     for path in [os.path.curdir, os.path.pardir]:
         fn = os.path.join(path, filename)
@@ -276,8 +275,8 @@ def open_urlresource(url):
             return open(fn)
 
     requires('urlfetch')
-    print >> get_original_stdout(), '\tfetching %s ...' % url
-    fn, _ = urllib.urlretrieve(url, filename)
+    print('\tfetching %s ...' % url, file=get_original_stdout())
+    fn, _ = urllib.request.urlretrieve(url, filename)
     return open(fn)
 
 #=======================================================================
@@ -311,7 +310,7 @@ def run_with_locale(catstr, *locales):
             finally:
                 if locale and orig_locale:
                     locale.setlocale(category, orig_locale)
-        inner.func_name = func.func_name
+        inner.__name__ = func.__name__
         inner.__doc__ = func.__doc__
         return inner
     return decorator
@@ -372,7 +371,7 @@ def bigmemtest(minsize, memuse, overhead=5*_1M):
                 # to make sure they work. We still want to avoid using
                 # too much memory, though, but we do that noisily.
                 maxsize = 5147
-                self.failIf(maxsize * memuse + overhead > 20 * _1M)
+                self.assertFalse(maxsize * memuse + overhead > 20 * _1M)
             else:
                 maxsize = int((max_memuse - overhead) / memuse)
                 if maxsize < minsize:
@@ -481,7 +480,7 @@ def run_doctest(module, verbosity=None):
     finally:
         sys.stdout = save_stdout
     if verbose:
-        print 'doctest (%s) ... %d tests with zero failures' % (module.__name__, t)
+        print('doctest (%s) ... %d tests with zero failures' % (module.__name__, t))
     return f, t
 
 #=======================================================================
@@ -498,13 +497,13 @@ def threading_cleanup(num_active, num_limbo):
     _MAX_COUNT = 10
     count = 0
     while len(threading._active) != num_active and count < _MAX_COUNT:
-        print threading._active
+        print(threading._active)
         count += 1
         time.sleep(0.1)
 
     count = 0
     while len(threading._limbo) != num_limbo and count < _MAX_COUNT:
-        print threading._limbo
+        print(threading._limbo)
         count += 1
         time.sleep(0.1)
 

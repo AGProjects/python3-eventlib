@@ -54,7 +54,7 @@ class LineOnlyReceiverTransport(GreenTransportBase):
     def __iter__(self):
         return self
 
-    def next(self):
+    def __next__(self):
         try:
             return self.readline()
         except ConnectionDone:

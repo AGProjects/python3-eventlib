@@ -57,7 +57,7 @@ class CoroutineCallingClass(object):
 
 class TestSaranwrap(unittest.TestCase):
     def assert_server_exists(self, prox):
-        self.assert_(saranwrap.status(prox))
+        self.assertTrue(saranwrap.status(prox))
         prox.foo = 0
         self.assertEqual(0, prox.foo)
 
@@ -89,18 +89,18 @@ class TestSaranwrap(unittest.TestCase):
     def test_wrap_dict(self):
         my_object = {'a':1}
         prox = saranwrap.wrap(my_object)
-        self.assertEqual('a', prox.keys()[0])
+        self.assertEqual('a', list(prox.keys())[0])
         self.assertEqual(1, prox['a'])
         self.assertEqual(str(my_object), str(prox))
         self.assertEqual('saran:' + repr(my_object), repr(prox))
-        self.assertEqual('saran:' + `my_object`, `prox`)
+        self.assertEqual('saran:' + repr(my_object), repr(prox))
 
     def test_wrap_module_class(self):
         prox = saranwrap.wrap(uuid)
         self.assertEqual(saranwrap.Proxy, type(prox))
         id = prox.uuid4()
         self.assertEqual(id.get_version(), uuid.uuid4().get_version())
-        self.assert_(repr(prox.uuid4))
+        self.assertTrue(repr(prox.uuid4))
 
     def test_wrap_eq(self):
         prox = saranwrap.wrap(uuid)
@@ -108,14 +108,14 @@ class TestSaranwrap(unittest.TestCase):
         id2 = prox.UUID(str(id1))
         self.assertEqual(id1, id2)
         id3 = prox.uuid4()
-        self.assert_(id1 != id3)
+        self.assertTrue(id1 != id3)
 
     def test_wrap_nonzero(self):
         prox = saranwrap.wrap(uuid)
         id1 = prox.uuid4()
-        self.assert_(bool(id1))
+        self.assertTrue(bool(id1))
         prox2 = saranwrap.wrap([1, 2, 3])
-        self.assert_(bool(prox2))
+        self.assertTrue(bool(prox2))
 
     def test_multiple_wraps(self):
         prox1 = saranwrap.wrap(uuid)
@@ -134,7 +134,7 @@ class TestSaranwrap(unittest.TestCase):
 
     def test_is_value(self):
         server = saranwrap.Server(None, None, None)
-        self.assert_(server.is_value(None))
+        self.assertTrue(server.is_value(None))
 
     def test_wrap_getitem(self):
         prox = saranwrap.wrap([0,1,2])
@@ -156,7 +156,7 @@ class TestSaranwrap(unittest.TestCase):
         prox = saranwrap.wrap(saranwrap)
         try:
             prox.raise_a_weird_error()
-            self.assert_(False)
+            self.assertTrue(False)
         except:
             import sys
             ex = sys.exc_info()[0]
@@ -192,7 +192,7 @@ class TestSaranwrap(unittest.TestCase):
         self.assert_server_exists(prox)
 
     def assertLessThan(self, a, b):
-        self.assert_(a < b, "%s is not less than %s" % (a, b))
+        self.assertTrue(a < b, "%s is not less than %s" % (a, b))
 
     def test_status(self):
         prox = saranwrap.wrap(time)
@@ -200,7 +200,7 @@ class TestSaranwrap(unittest.TestCase):
         status = saranwrap.status(prox)
         self.assertEqual(status['object_count'], 1)
         self.assertEqual(status['next_id'], 2)
-        self.assert_(status['pid'])  # can't guess what it will be
+        self.assertTrue(status['pid'])  # can't guess what it will be
         # status of an object should be the same as the module
         self.assertEqual(saranwrap.status(a), status)
         # create a new one then immediately delete it
@@ -210,7 +210,7 @@ class TestSaranwrap(unittest.TestCase):
         self.assertEqual(status['object_count'], 1)
         self.assertEqual(status['next_id'], 3)
         prox2 = saranwrap.wrap(uuid)
-        self.assert_(status['pid'] != saranwrap.status(prox2)['pid'])
+        self.assertTrue(status['pid'] != saranwrap.status(prox2)['pid'])
 
     def test_del(self):
         prox = saranwrap.wrap(time)
@@ -227,8 +227,8 @@ class TestSaranwrap(unittest.TestCase):
 
     def test_contains(self):
         prox = saranwrap.wrap({'a':'b'})
-        self.assert_('a' in prox)
-        self.assert_('x' not in prox)
+        self.assertTrue('a' in prox)
+        self.assertTrue('x' not in prox)
 
     def test_variable_and_keyword_arguments_with_function_calls(self):
         import optparse
@@ -256,8 +256,8 @@ class TestSaranwrap(unittest.TestCase):
     def test_status_of_none(self):
         try:
             saranwrap.status(None)
-            self.assert_(False)
-        except AttributeError, e:
+            self.assertTrue(False)
+        except AttributeError as e:
             pass
 
     def test_not_inheriting_pythonpath(self):
@@ -271,11 +271,11 @@ sys_path = sys.path""")
 
         # this should fail because we haven't stuck the temp_dir in our path yet
         prox = saranwrap.wrap_module('jitar_hero')
-        import cPickle
+        import pickle
         try:
             prox.pypath
             self.fail()
-        except cPickle.UnpicklingError:
+        except pickle.UnpicklingError:
             pass
 
         # now try to saranwrap it
@@ -283,8 +283,8 @@ sys_path = sys.path""")
         try:
             import jitar_hero
             prox = saranwrap.wrap(jitar_hero)
-            self.assert_(prox.pypath.count(temp_dir))
-            self.assert_(prox.sys_path.count(temp_dir))
+            self.assertTrue(prox.pypath.count(temp_dir))
+            self.assertTrue(prox.sys_path.count(temp_dir))
         finally:
             import shutil
             shutil.rmtree(temp_dir)
@@ -296,9 +296,9 @@ sys_path = sys.path""")
 
         pool = Pool(max_size=4)
         waiters = []
-        waiters.append(pool.execute(lambda: self.assertEquals(prox.one, 1)))
-        waiters.append(pool.execute(lambda: self.assertEquals(prox.two, 2)))
-        waiters.append(pool.execute(lambda: self.assertEquals(prox.three, 3)))
+        waiters.append(pool.execute(lambda: self.assertEqual(prox.one, 1)))
+        waiters.append(pool.execute(lambda: self.assertEqual(prox.two, 2)))
+        waiters.append(pool.execute(lambda: self.assertEqual(prox.three, 3)))
         for waiter in waiters:
             waiter.wait()
 
@@ -307,9 +307,9 @@ sys_path = sys.path""")
         compound_object = {'a':[1,2,3]}
         prox = saranwrap.wrap(compound_object)
         def make_assertions(copied):
-            self.assert_(isinstance(copied, dict))
-            self.assert_(isinstance(copied['a'], list))
-            self.assertEquals(copied, compound_object)
+            self.assertTrue(isinstance(copied, dict))
+            self.assertTrue(isinstance(copied['a'], list))
+            self.assertEqual(copied, compound_object)
             self.assertNotEqual(id(compound_object), id(copied))
 
         make_assertions(copy.copy(prox))
@@ -319,7 +319,7 @@ sys_path = sys.path""")
         return # this test is known to fail, we can implement it sometime in the future if we wish
         from greentest import saranwrap_test
         prox = saranwrap.wrap([saranwrap_test.list_maker])
-        self.assertEquals(list_maker(), prox[0]())
+        self.assertEqual(list_maker(), prox[0]())
 
     def test_under_the_hood_coroutines(self):
         # so, we want to write a class which uses a coroutine to call
@@ -335,7 +335,7 @@ sys_path = sys.path""")
         # we check the assert below
         api.sleep(0.1)
 
-        self.assert_(
+        self.assertTrue(
             'random' in obj_proxy.get_dict(),
             'Coroutine in saranwrapped object did not run')
 

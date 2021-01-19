@@ -46,7 +46,7 @@ class Test(unittest.TestCase):
     def test_block_on_already_succeed(self):
         d = defer.succeed('hey corotwine')
         res = block_on(d)
-        assert res == 'hey corotwine', `res`
+        assert res == 'hey corotwine', repr(res)
 
     def test_block_on_already_failed(self):
         d = defer.fail(Failure(ZeroDivisionError()))

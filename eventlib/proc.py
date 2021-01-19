@@ -214,7 +214,7 @@ def killall(procs, *throw_args, **kwargs):
         throw_args = (ProcExit, )
     wait = kwargs.pop('wait', False)
     if kwargs:
-        raise TypeError('Invalid keyword argument for proc.killall(): %s' % ', '.join(kwargs.keys()))
+        raise TypeError('Invalid keyword argument for proc.killall(): %s' % ', '.join(list(kwargs.keys())))
     for g in procs:
         if not g.dead:
             api.get_hub().schedule_call_global(0, g.throw, *throw_args)
@@ -408,7 +408,7 @@ class Source(object):
         self._start_send()
 
     def _start_send(self):
-        api.get_hub().schedule_call_global(0, self._do_send, self._value_links.items(), self._value_links)
+        api.get_hub().schedule_call_global(0, self._do_send, list(self._value_links.items()), self._value_links)
 
     def send_exception(self, *throw_args):
         assert not self.ready(), "%s has been fired already" % self
@@ -417,7 +417,7 @@ class Source(object):
         self._start_send_exception()
 
     def _start_send_exception(self):
-        api.get_hub().schedule_call_global(0, self._do_send, self._exception_links.items(), self._exception_links)
+        api.get_hub().schedule_call_global(0, self._do_send, list(self._exception_links.items()), self._exception_links)
 
     def _do_send(self, links, consult):
         while links:
@@ -532,7 +532,7 @@ class Proc(Source):
         klass = type(self).__name__
         return '<%s %s>' % (klass, ' '.join(self._repr_helper()))
 
-    def __nonzero__(self):
+    def __bool__(self):
         if self.ready():
             # with current _run this does not makes any difference
             # still, let keep it there
@@ -569,7 +569,7 @@ class Proc(Source):
         """
         try:
             result = function(*args, **kwargs)
-        except api.GreenletExit, e:
+        except api.GreenletExit as e:
             self.send_exception(e)
             raise
         except:
@@ -630,7 +630,7 @@ def trap_errors(errors, func, *args, **kwargs):
     """DEPRECATED in favor of wrap_errors"""
     try:
         return func(*args, **kwargs)
-    except errors, ex:
+    except errors as ex:
         return ex
 
 
@@ -665,7 +665,7 @@ class wrap_errors(object):
     def __call__(self, *args, **kwargs):
         try:
             return self.func(*args, **kwargs)
-        except self.errors, ex:
+        except self.errors as ex:
             return ex
 
     def __str__(self):

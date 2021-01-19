@@ -13,7 +13,7 @@ class TestQueue(LimitedTestCase):
     def test_send_first(self):
         q = coros.queue()
         q.send('hi')
-        self.assertEquals(q.wait(), 'hi')
+        self.assertEqual(q.wait(), 'hi')
 
     def test_send_exception_first(self):
         q = coros.queue()
@@ -24,7 +24,7 @@ class TestQueue(LimitedTestCase):
         q = coros.queue()
         def waiter(q):
             timer = api.exc_after(0.1, api.TimeoutError)
-            self.assertEquals(q.wait(), 'hi2')
+            self.assertEqual(q.wait(), 'hi2')
             timer.cancel()
 
         api.spawn(waiter, q)
@@ -46,12 +46,12 @@ class TestQueue(LimitedTestCase):
 
         api.spawn(putter, q)
         api.sleep(0)
-        self.assertEquals(results, ['a', 'b'])
-        self.assertEquals(q.wait(), 'a')
+        self.assertEqual(results, ['a', 'b'])
+        self.assertEqual(q.wait(), 'a')
         api.sleep(0)
-        self.assertEquals(results, ['a', 'b', 'c'])
-        self.assertEquals(q.wait(), 'b')
-        self.assertEquals(q.wait(), 'c')
+        self.assertEqual(results, ['a', 'b', 'c'])
+        self.assertEqual(q.wait(), 'b')
+        self.assertEqual(q.wait(), 'c')
 
     def test_zero_max_size(self):
         q = coros.queue(0)
@@ -68,10 +68,10 @@ class TestQueue(LimitedTestCase):
 
         api.spawn(sender, e1, q)
         api.sleep(0)
-        self.assert_(not e1.ready())
+        self.assertTrue(not e1.ready())
         api.spawn(receiver, e2, q)
-        self.assertEquals(e2.wait(),'hi')
-        self.assertEquals(e1.wait(),'done')
+        self.assertEqual(e2.wait(),'hi')
+        self.assertEqual(e1.wait(),'done')
 
     def test_multiple_waiters(self):
         # tests that multiple waiters get their results back
@@ -99,12 +99,12 @@ class TestQueue(LimitedTestCase):
                     pass  # no pending result at that event
             return len(results)
         q.send(sendings[0])
-        self.assertEquals(collect_pending_results(), 1)
+        self.assertEqual(collect_pending_results(), 1)
         q.send(sendings[1])
-        self.assertEquals(collect_pending_results(), 2)
+        self.assertEqual(collect_pending_results(), 2)
         q.send(sendings[2])
         q.send(sendings[3])
-        self.assertEquals(collect_pending_results(), 4)
+        self.assertEqual(collect_pending_results(), 4)
 
     def test_waiters_that_cancel(self):
         q = coros.queue()
@@ -120,10 +120,10 @@ class TestQueue(LimitedTestCase):
 
         evt = coros.event()
         api.spawn(do_receive, q, evt)
-        self.assertEquals(evt.wait(), 'timed out')
+        self.assertEqual(evt.wait(), 'timed out')
 
         q.send('hi')
-        self.assertEquals(q.wait(), 'hi')
+        self.assertEqual(q.wait(), 'hi')
 
     def test_senders_that_die(self):
         q = coros.queue()
@@ -132,7 +132,7 @@ class TestQueue(LimitedTestCase):
             q.send('sent')
 
         api.spawn(do_send, q)
-        self.assertEquals(q.wait(), 'sent')
+        self.assertEqual(q.wait(), 'sent')
 
     def test_two_waiters_one_dies(self):
         def waiter(q, evt):
@@ -152,8 +152,8 @@ class TestQueue(LimitedTestCase):
         api.spawn(waiter, q, waiting_evt)
         api.sleep(0)
         q.send('hi')
-        self.assertEquals(dying_evt.wait(), 'timed out')
-        self.assertEquals(waiting_evt.wait(), 'hi')
+        self.assertEqual(dying_evt.wait(), 'timed out')
+        self.assertEqual(waiting_evt.wait(), 'hi')
 
     def test_two_bogus_waiters(self):
         def do_receive(q, evt):
@@ -171,9 +171,9 @@ class TestQueue(LimitedTestCase):
         api.spawn(do_receive, q, e2)
         api.sleep(0)
         q.send('sent')
-        self.assertEquals(e1.wait(), 'timed out')
-        self.assertEquals(e2.wait(), 'timed out')
-        self.assertEquals(q.wait(), 'sent')
+        self.assertEqual(e1.wait(), 'timed out')
+        self.assertEqual(e2.wait(), 'timed out')
+        self.assertEqual(q.wait(), 'sent')
                 
     def test_waiting(self):
         def do_wait(q, evt):
@@ -184,12 +184,12 @@ class TestQueue(LimitedTestCase):
         e1 = coros.event()
         api.spawn(do_wait, q, e1)
         api.sleep(0)
-        self.assertEquals(1, waiting(q))
+        self.assertEqual(1, waiting(q))
         q.send('hi')
         api.sleep(0)
-        self.assertEquals(0, waiting(q))
-        self.assertEquals('hi', e1.wait())
-        self.assertEquals(0, waiting(q))
+        self.assertEqual(0, waiting(q))
+        self.assertEqual('hi', e1.wait())
+        self.assertEqual(0, waiting(q))
 
 if __name__=='__main__':
     main()

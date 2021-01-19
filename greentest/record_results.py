@@ -49,7 +49,7 @@ def record(changeset, argv, stdout, returncode):
                stdout text,
                exitcode integer)''')
     c.execute('insert into command_record (command, stdout, exitcode)'
-              'values (?, ?, ?)', (`argv`, stdout, returncode))
+              'values (?, ?, ?)', (repr(argv), stdout, returncode))
     c.commit()
 
 def main():
@@ -62,9 +62,9 @@ def main():
     changeset = os.popen(COMMAND_CHANGESET).readlines()[0].replace('changeset:', '').strip().replace(':', '_')
     output_name = os.tmpnam()
     arg = ' '.join(argv) + ' &> %s' % output_name
-    print arg
+    print(arg)
     returncode = os.system(arg)>>8
-    print arg, 'finished with code', returncode
+    print(arg, 'finished with code', returncode)
     stdout = codecs.open(output_name, mode='r', encoding='utf-8', errors='replace').read().replace('\x00', '?')
     if not debug:
         if returncode==1:

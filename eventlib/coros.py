@@ -187,7 +187,7 @@ class event(object):
         self._exc = exc
         hub = api.get_hub()
         if self._waiters:
-            hub.schedule_call_global(0, self._do_send, self._result, self._exc, self._waiters.keys())
+            hub.schedule_call_global(0, self._do_send, self._result, self._exc, list(self._waiters.keys()))
 
     def _do_send(self, result, exc, waiters):
         while waiters:
@@ -441,7 +441,7 @@ class queue(object):
         self.items = collections.deque()
         self.sem = semaphore(count=0, limit=max_size)
 
-    def __nonzero__(self):
+    def __bool__(self):
         return len(self.items)>0
 
     def __len__(self):
@@ -569,7 +569,7 @@ class Actor(object):
 
 
 def _test():
-    print "Running doctests.  There will be no further output if they succeed."
+    print("Running doctests.  There will be no further output if they succeed.")
     import doctest
     doctest.testmod()
 

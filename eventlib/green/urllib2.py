@@ -1,12 +1,12 @@
 urllib2 = __import__('urllib2')
 for var in dir(urllib2):
-    exec "%s = urllib2.%s" % (var, var)
+    exec("%s = urllib2.%s" % (var, var))
 
 # import the following to be a better drop-in replacement
 __import_lst = ['__version__', '__cut_port_re', '_parse_proxy']
 
 for var in __import_lst:
-    exec "%s = getattr(urllib2, %r, None)" % (var, var)
+    exec("%s = getattr(urllib2, %r, None)" % (var, var))
 
 for x in ('urlopen', 'install_opener', 'build_opener', 'HTTPHandler', 'HTTPSHandler',
           'HTTPCookieProcessor', 'FileHandler', 'FTPHandler', 'CacheFTPHandler', 'GopherError'):
@@ -20,9 +20,9 @@ import sys
 from eventlib.green import time
 
 try:
-    from cStringIO import StringIO
+    from io import StringIO
 except ImportError:
-    from StringIO import StringIO
+    from io import StringIO
 
 from eventlib.green.urllib import (unwrap, unquote, splittype, splithost, quote,
      addinfourl, splitport, splitquery,
@@ -45,7 +45,7 @@ def install_opener(opener):
 def build_opener(*handlers):
     import types
     def isclass(obj):
-        return isinstance(obj, types.ClassType) or hasattr(obj, "__bases__")
+        return isinstance(obj, type) or hasattr(obj, "__bases__")
 
     opener = OpenerDirector()
     default_classes = [ProxyHandler, UnknownHandler, HTTPHandler,
@@ -73,7 +73,7 @@ def build_opener(*handlers):
         opener.add_handler(h)
     return opener
 
-class HTTPHandler(urllib2.HTTPHandler):
+class HTTPHandler(urllib.request.HTTPHandler):
 
     def http_open(self, req):
         return self.do_open(httplib.HTTPConnection, req)
@@ -81,21 +81,21 @@ class HTTPHandler(urllib2.HTTPHandler):
     http_request = AbstractHTTPHandler.do_request_
 
 if hasattr(urllib2, 'HTTPSHandler'):
-    class HTTPSHandler(urllib2.HTTPSHandler):
+    class HTTPSHandler(urllib.request.HTTPSHandler):
 
         def https_open(self, req):
             return self.do_open(httplib.HTTPSConnection, req)
 
         https_request = AbstractHTTPHandler.do_request_
 
-class HTTPCookieProcessor(urllib2.HTTPCookieProcessor):
+class HTTPCookieProcessor(urllib.request.HTTPCookieProcessor):
     def __init__(self, cookiejar=None):
         from eventlib.green import cookielib
         if cookiejar is None:
             cookiejar = cookielib.CookieJar()
         self.cookiejar = cookiejar
 
-class FileHandler(urllib2.FileHandler):
+class FileHandler(urllib.request.FileHandler):
 
     def get_names(self):
         if FileHandler.names is None:
@@ -127,13 +127,13 @@ class FileHandler(urllib2.FileHandler):
                               headers, 'file:'+file)
         raise URLError('file not on local host')
 
-class FTPHandler(urllib2.FTPHandler):
+class FTPHandler(urllib.request.FTPHandler):
     def ftp_open(self, req):
         from eventlib.green import ftplib
         import mimetypes
         host = req.get_host()
         if not host:
-            raise IOError, ('ftp error', 'no host given')
+            raise IOError('ftp error', 'no host given')
         host, port = splitport(host)
         if port is None:
             port = ftplib.FTP_PORT
@@ -152,11 +152,11 @@ class FTPHandler(urllib2.FTPHandler):
 
         try:
             host = socket.gethostbyname(host)
-        except socket.error, msg:
+        except socket.error as msg:
             raise URLError(msg)
         path, attrs = splitattr(req.get_selector())
         dirs = path.split('/')
-        dirs = map(unquote, dirs)
+        dirs = list(map(unquote, dirs))
         dirs, file = dirs[:-1], dirs[-1]
         if dirs and not dirs[0]:
             dirs = dirs[1:]
@@ -178,8 +178,8 @@ class FTPHandler(urllib2.FTPHandler):
             sf = StringIO(headers)
             headers = mimetools.Message(sf)
             return addinfourl(fp, headers, req.get_full_url())
-        except ftplib.all_errors, msg:
-            raise IOError, ('ftp error', msg), sys.exc_info()[2]
+        except ftplib.all_errors as msg:
+            raise IOError('ftp error', msg).with_traceback(sys.exc_info()[2])
 
     def connect_ftp(self, user, passwd, host, port, dirs):
         fw = ftpwrapper(user, passwd, host, port, dirs)
@@ -216,7 +216,7 @@ class CacheFTPHandler(FTPHandler):
         # first check for old ones
         t = time.time()
         if self.soonest <= t:
-            for k, v in self.timeout.items():
+            for k, v in list(self.timeout.items()):
                 if v < t:
                     self.cache[k].close()
                     del self.cache[k]
@@ -225,7 +225,7 @@ class CacheFTPHandler(FTPHandler):
 
         # then check the size
         if len(self.cache) == self.max_conns:
-            for k, v in self.timeout.items():
+            for k, v in list(self.timeout.items()):
                 if v == self.soonest:
                     del self.cache[k]
                     del self.timeout[k]

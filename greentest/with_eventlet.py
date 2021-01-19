@@ -38,7 +38,7 @@ def setup_hub(hub, reactor):
         from eventlib.api import use_hub
         try:
             use_hub(hub)
-        except ImportError, ex:
+        except ImportError as ex:
             # as a shortcut, try to import the reactor with such name
             try:
                 r = import_reactor(hub)
@@ -67,9 +67,9 @@ if __name__=='__main__':
     setup_hub(hub, reactor)
     from eventlib.api import get_hub
     hub = get_hub() # set up the hub now
-    print '===HUB=%r' % hub
+    print('===HUB=%r' % hub)
     if 'twisted.internet.reactor' in sys.modules:
-        print '===REACTOR=%r' % sys.modules['twisted.internet.reactor']
+        print('===REACTOR=%r' % sys.modules['twisted.internet.reactor'])
     sys.stdout.flush()
-    execfile(sys.argv[0])
+    exec(compile(open(sys.argv[0], "rb").read(), sys.argv[0], 'exec'))
 

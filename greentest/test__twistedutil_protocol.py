@@ -130,7 +130,7 @@ class TestGreenTransport(TestUnbufferedTransport):
         self.conn.write('iterator\r\n')
         self.assertEqual('you said iterator. BYE', ''.join(self.conn))
 
-    _tests = [x for x in locals().keys() if x.startswith('test_')]
+    _tests = [x for x in list(locals().keys()) if x.startswith('test_')]
 
     def test_resume_producing(self):
         for test in self._tests:

@@ -53,7 +53,7 @@ class SocketConsole(greenlets.greenlet):
             'flush': lambda: None,
             'readline': lambda *a: readline(*a).replace('\r\n', '\n'),
         }
-        for key, value in self.fixups.iteritems():
+        for key, value in self.fixups.items():
             if hasattr(desc, key):
                 self.old[key] = getattr(desc, key)
             setattr(desc, key, value)
@@ -88,22 +88,22 @@ class SocketConsole(greenlets.greenlet):
         self.fixups.clear()
         self.old.clear()
         self.desc = None
-        print "backdoor closed to %s:%s" % self.hostport
+        print("backdoor closed to %s:%s" % self.hostport)
 
 
 def backdoor_server(server, locals=None):
-    print "backdoor listening on %s:%s" % server.getsockname()
+    print("backdoor listening on %s:%s" % server.getsockname())
     try:
         try:
             while True:
                 (conn, (host, port)) = server.accept()
-                print "backdoor connected to %s:%s" % (host, port)
+                print("backdoor connected to %s:%s" % (host, port))
                 fl = conn.makeGreenFile("rw")
                 fl.newlines = '\n'
                 greenlet = SocketConsole(fl, (host, port), locals)
                 hub = api.get_hub()
                 hub.schedule_call_global(0, greenlet.switch)
-        except socket.error, e:
+        except socket.error as e:
             # Broken pipe means it was shutdown
             if e[0] != 32:
                 raise
@@ -111,15 +111,16 @@ def backdoor_server(server, locals=None):
         server.close()
 
 
-def backdoor((conn, addr), locals=None):
+def backdoor(xxx_todo_changeme, locals=None):
     """ Use this with tcp_server like so:
         api.tcp_server(
                        api.tcp_listener(('127.0.0.1', 9000)),
                        backdoor.backdoor,
                        {})
     """
+    (conn, addr) = xxx_todo_changeme
     host, port = addr
-    print "backdoor to %s:%s" % (host, port)
+    print("backdoor to %s:%s" % (host, port))
     fl = conn.makeGreenFile("rw")
     fl.newlines = '\n'
     greenlet = SocketConsole(fl, (host, port), locals)

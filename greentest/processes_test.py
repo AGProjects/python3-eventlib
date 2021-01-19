@@ -36,7 +36,7 @@ class TestEchoPool(TestCase):
             result = proc.read()
         finally:
             self.pool.put(proc)
-        self.assertEquals(result, 'hello\n')
+        self.assertEqual(result, 'hello\n')
 
     def test_read_eof(self):
         proc = self.pool.get()
@@ -62,7 +62,7 @@ class TestCatPool(TestCase):
         finally:
             self.pool.put(proc)
 
-        self.assertEquals(result, 'goodbye')
+        self.assertEqual(result, 'goodbye')
 
     def test_write_to_dead(self):
         result = None
@@ -97,14 +97,14 @@ class TestDyingProcessesLeavePool(TestCase):
         try:
             try:
                 result = proc.read()
-                self.assertEquals(result, 'hello\n')
+                self.assertEqual(result, 'hello\n')
                 result = proc.read()
             except processes.DeadProcess:
                 pass
         finally:
             self.pool.put(proc)
         proc2 = self.pool.get()
-        self.assert_(proc is not proc2)
+        self.assertTrue(proc is not proc2)
 
 
 class TestProcessLivesForever(TestCase):
@@ -117,15 +117,15 @@ class TestProcessLivesForever(TestCase):
         proc = self.pool.get()
         try:
             result = proc.read(2)
-            self.assertEquals(result, 'y\n')
+            self.assertEqual(result, 'y\n')
         finally:
             self.pool.put(proc)
 
         proc2 = self.pool.get()
-        self.assert_(proc is proc2, "This will fail if there is a timing issue")
+        self.assertTrue(proc is proc2, "This will fail if there is a timing issue")
         try:
             result = proc2.read(2)
-            self.assertEquals(result, 'y\n')
+            self.assertEqual(result, 'y\n')
         finally:
             self.pool.put(proc2)
 

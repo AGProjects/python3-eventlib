@@ -16,7 +16,7 @@
 import os
 import threading
 
-from Queue import Empty, Queue
+from queue import Empty, Queue
 
 from eventlib import api, coros, greenio
 
@@ -70,7 +70,7 @@ def tworker():
             rv = meth(*args,**kwargs)
         except SYS_EXCS:
             raise
-        except Exception,exn:
+        except Exception as exn:
             import sys
             (a,b,tb) = sys.exc_info()
             rv = (exn,a,b,tb)
@@ -159,7 +159,7 @@ class Proxy(object):
         return self._obj.__str__()
     def __len__(self):
         return len(self._obj)
-    def __nonzero__(self):
+    def __bool__(self):
         return bool(self._obj)
 
 
@@ -181,6 +181,6 @@ setup()
 def killall():
     for i in _threads:
         _reqq.put(None)
-    for thr in _threads.values():
+    for thr in list(_threads.values()):
         thr.join()
 

@@ -109,7 +109,8 @@ class TestApi(TestCase):
         server = api.tcp_listener(('0.0.0.0', 0))
         bound_port = server.getsockname()[1]
 
-        def accept_twice((conn, addr)):
+        def accept_twice(xxx_todo_changeme):
+            (conn, addr) = xxx_todo_changeme
             connected.append(True)
             conn.close()
             if len(connected) == 2:
@@ -145,7 +146,8 @@ class TestApi(TestCase):
         server = api.tcp_listener(('0.0.0.0', 0))
         bound_port = server.getsockname()[1]
 
-        def client_connected((conn, addr)):
+        def client_connected(xxx_todo_changeme1):
+            (conn, addr) = xxx_todo_changeme1
             conn.close()
 
         def go():
@@ -179,7 +181,7 @@ class TestApi(TestCase):
 
     def test_named(self):
         named_foo = api.named('api_test.Foo')
-        self.assertEquals(
+        self.assertEqual(
             named_foo.__name__,
             "Foo")
 
@@ -214,7 +216,7 @@ class TestApi(TestCase):
             pass
 
         result = evt.wait()
-        self.assertEquals(result, 'sent via event')
+        self.assertEqual(result, 'sent via event')
 
 
 class Foo(object):

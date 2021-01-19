@@ -36,8 +36,8 @@ class Hub(hub.BaseHub):
                 time.sleep(seconds)
             return
         try:
-            r, w, ig = select.select(readers.keys(), writers.keys(), [], seconds)
-        except select.error, e:
+            r, w, ig = select.select(list(readers.keys()), list(writers.keys()), [], seconds)
+        except select.error as e:
             if e.args[0] == errno.EINTR:
                 return
             raise

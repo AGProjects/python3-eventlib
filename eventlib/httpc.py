@@ -25,10 +25,10 @@ from eventlib.green import httplib
 import os.path
 import os
 import time
-import urlparse
+import urllib.parse
 
 
-url_parser = urlparse.urlparse
+url_parser = urllib.parse.urlparse
 
 
 _old_HTTPConnection = httplib.HTTPConnection
@@ -135,7 +135,7 @@ class FileScheme(object):
                 f = file(self.path, 'w')
                 f.write(body)
                 f.close()
-            except IOError, e:
+            except IOError as e:
                 self.status = 500
                 self.raise_connection_error()
         elif method == 'get':
@@ -214,7 +214,7 @@ class _Params(object):
 class _LocalParams(_Params):
     def __init__(self, params, **kwargs):
         self._delegate = params
-        for k, v in kwargs.iteritems():
+        for k, v in kwargs.items():
             setattr(self, k, v)
 
     def __getattr__(self, key):
@@ -224,7 +224,7 @@ class _LocalParams(_Params):
     def __reduce__(self):
         params = copy.copy(self._delegate)
         kwargs = copy.copy(self.__dict__)
-        assert(kwargs.has_key('_delegate'))
+        assert('_delegate' in kwargs)
         del kwargs['_delegate']
         if hasattr(params,'aux'): del params.aux
         return (_LocalParams,(params,),kwargs)
@@ -567,7 +567,7 @@ class HttpSuite(object):
                 body = make_safe_loader(self.loader(body))
             except KeyboardInterrupt:
                 raise
-            except Exception, e:
+            except Exception as e:
                 raise UnparseableResponse(response.msg.get('content-type', '(unknown)'),
                                           self.loader,
                                           body,
@@ -631,7 +631,7 @@ class HttpSuite(object):
         while retried <= max_retries:
             try:
                 return req()
-            except (Found, TemporaryRedirect, MovedPermanently, SeeOther), e:
+            except (Found, TemporaryRedirect, MovedPermanently, SeeOther) as e:
                 if retried >= max_retries:
                     raise
                 retried += 1

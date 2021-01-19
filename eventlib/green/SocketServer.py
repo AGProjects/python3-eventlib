@@ -2,7 +2,7 @@ __import_lst = ['__all__', '__version__', 'BaseServer', 'TCPServer', 'UDPServer'
                 'ThreadingMixIn', 'BaseRequestHandler', 'StreamRequestHandler', 'DatagramRequestHandler']
 __SocketServer = __import__('SocketServer')
 for var in __import_lst:
-    exec "%s = __SocketServer.%s" % (var, var)
+    exec("%s = __SocketServer.%s" % (var, var))
 
 
 # QQQ ForkingMixIn should be fixed to use green waitpid?

@@ -19,7 +19,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from __future__ import with_statement
+
 import sys
 import unittest
 import weakref
@@ -51,7 +51,7 @@ class Test(unittest.TestCase):
         try:
             with timeout(DELAY, IOError("Operation takes way too long")):
                 sleep(DELAY*2)
-        except IOError, ex:
+        except IOError as ex:
             assert str(ex)=="Operation takes way too long", repr(ex)
 
         # Providing classes instead of values should be possible too:

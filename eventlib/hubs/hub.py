@@ -121,11 +121,11 @@ class BaseHub(object):
 
     def squelch_exception(self, fileno, exc_info):
         traceback.print_exception(*exc_info)
-        print >>sys.stderr, "Removing descriptor: %r" % (fileno,)
+        print("Removing descriptor: %r" % (fileno,), file=sys.stderr)
         try:
             self.remove_descriptor(fileno)
-        except Exception, e:
-            print >>sys.stderr, "Exception while removing descriptor! %r" % (e,)
+        except Exception as e:
+            print("Exception while removing descriptor! %r" % (e,), file=sys.stderr)
 
     def wait(self, seconds=None):
         raise NotImplementedError("Implement this in a subclass")
@@ -207,7 +207,7 @@ class BaseHub(object):
 
     def squelch_observer_exception(self, observer, exc_info):
         traceback.print_exception(*exc_info)
-        print >>sys.stderr, "Removing observer: %r" % (observer,)
+        print("Removing observer: %r" % (observer,), file=sys.stderr)
         self.remove_observer(observer)
 
     def fire_observers(self, activity):
@@ -221,7 +221,7 @@ class BaseHub(object):
 
     def squelch_timer_exception(self, timer, exc_info):
         traceback.print_exception(*exc_info)
-        print >>sys.stderr, "Timer raised: %r" % (timer,)
+        print("Timer raised: %r" % (timer,), file=sys.stderr)
 
     def _add_absolute_timer(self, when, info):
         # the 0 placeholder makes it easy to bisect_right using (now, 1)
@@ -276,7 +276,7 @@ class BaseHub(object):
         t = self.timers
         last = bisect.bisect_right(t, (when, 1))
         i = 0
-        for i in xrange(last):
+        for i in range(last):
             timer = t[i][2]
             try:
                 try:

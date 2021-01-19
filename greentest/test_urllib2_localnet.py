@@ -3,7 +3,7 @@
 from greentest import exit_unless_25; exit_unless_25()
 
 import sys
-import urlparse
+import urllib.parse
 import unittest
 import hashlib
 from greentest import test_support
@@ -165,13 +165,13 @@ class DigestAuthHandler:
         if len(self._users) == 0:
             return True
 
-        if not request_handler.headers.has_key('Proxy-Authorization'):
+        if 'Proxy-Authorization' not in request_handler.headers:
             return self._return_auth_challenge(request_handler)
         else:
             auth_dict = self._create_auth_dict(
                 request_handler.headers['Proxy-Authorization']
                 )
-            if self._users.has_key(auth_dict["username"]):
+            if auth_dict["username"] in self._users:
                 password = self._users[ auth_dict["username"] ]
             else:
                 return self._return_auth_challenge(request_handler)
@@ -214,7 +214,7 @@ class FakeProxyHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         pass
 
     def do_GET(self):
-        (scm, netloc, path, params, query, fragment) = urlparse.urlparse(
+        (scm, netloc, path, params, query, fragment) = urllib.parse.urlparse(
             self.path, 'http')
         self.short_path = path
         if self.digest_auth_handler.handle_request(self):
@@ -247,9 +247,9 @@ class ProxyAuthTests(unittest.TestCase):
         self.server.start()
         self.server.ready.wait()
 
-        handler = urllib2.ProxyHandler({"http" : self.PROXY_URL})
-        self._digest_auth_handler = urllib2.ProxyDigestAuthHandler()
-        self.opener = urllib2.build_opener(handler, self._digest_auth_handler)
+        handler = urllib.request.ProxyHandler({"http" : self.PROXY_URL})
+        self._digest_auth_handler = urllib.request.ProxyDigestAuthHandler()
+        self.opener = urllib.request.build_opener(handler, self._digest_auth_handler)
 
     def tearDown(self):
         self.server.stop()
@@ -258,13 +258,13 @@ class ProxyAuthTests(unittest.TestCase):
         self._digest_auth_handler.add_password(self.REALM, self.URL,
                                                self.USER, self.PASSWD+"bad")
         FakeProxyHandler.digest_auth_handler.set_qop("auth")
-        self.assertRaises(urllib2.HTTPError,
+        self.assertRaises(urllib.error.HTTPError,
                           self.opener.open,
                           self.URL)
 
     def test_proxy_with_no_password_raises_httperror(self):
         FakeProxyHandler.digest_auth_handler.set_qop("auth")
-        self.assertRaises(urllib2.HTTPError,
+        self.assertRaises(urllib.error.HTTPError,
                           self.opener.open,
                           self.URL)
 
@@ -283,7 +283,7 @@ class ProxyAuthTests(unittest.TestCase):
         FakeProxyHandler.digest_auth_handler.set_qop("auth-int")
         try:
             result = self.opener.open(self.URL)
-        except urllib2.URLError:
+        except urllib.error.URLError:
             # It's okay if we don't support auth-int, but we certainly
             # shouldn't receive any kind of exception here other than
             # a URLError.

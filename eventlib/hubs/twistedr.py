@@ -54,7 +54,7 @@ class LocalDelayedCall(DelayedCall):
 def callLater(DelayedCallClass, reactor, _seconds, _f, *args, **kw):
     # the same as original but creates fixed DelayedCall instance
     assert callable(_f), "%s is not callable" % _f
-    assert sys.maxint >= _seconds >= 0, \
+    assert sys.maxsize >= _seconds >= 0, \
            "%s is not greater than or equal to 0 seconds" % (_seconds,)
     tple = DelayedCallClass(reactor.seconds() + _seconds, _f, args, kw,
                             reactor._cancelCallLater,

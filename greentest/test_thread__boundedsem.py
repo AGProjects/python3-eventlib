@@ -8,4 +8,4 @@ def allocate_lock():
 thread.allocate_lock = allocate_lock
 thread.LockType = coros.BoundedSemaphore
 
-execfile('test_thread.py')
+exec(compile(open('test_thread.py', "rb").read(), 'test_thread.py', 'exec'))

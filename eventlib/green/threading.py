@@ -123,7 +123,8 @@ class _RLock(_Verbose):
 
     # Internal methods used by condition variables
 
-    def _acquire_restore(self, (count, owner)):
+    def _acquire_restore(self, xxx_todo_changeme):
+        (count, owner) = xxx_todo_changeme
         self.__block.acquire()
         self.__count = count
         self.__owner = owner
@@ -321,7 +322,7 @@ class _BoundedSemaphore(_Semaphore):
 
     def release(self):
         if self._Semaphore__value >= self._initial_value:
-            raise ValueError, "Semaphore released too many times"
+            raise ValueError("Semaphore released too many times")
         return _Semaphore.release(self)
 
 
@@ -497,19 +498,19 @@ class Thread(_Verbose):
                     # Lib/traceback.py)
                     exc_type, exc_value, exc_tb = self.__exc_info()
                     try:
-                        print>>self.__stderr, (
+                        print((
                             "Exception in thread " + self.getName() +
-                            " (most likely raised during interpreter shutdown):")
-                        print>>self.__stderr, (
-                            "Traceback (most recent call last):")
+                            " (most likely raised during interpreter shutdown):"), file=self.__stderr)
+                        print((
+                            "Traceback (most recent call last):"), file=self.__stderr)
                         while exc_tb:
-                            print>>self.__stderr, (
+                            print((
                                 '  File "%s", line %s, in %s' %
                                 (exc_tb.tb_frame.f_code.co_filename,
                                     exc_tb.tb_lineno,
-                                    exc_tb.tb_frame.f_code.co_name))
+                                    exc_tb.tb_frame.f_code.co_name)), file=self.__stderr)
                             exc_tb = exc_tb.tb_next
-                        print>>self.__stderr, ("%s: %s" % (exc_type, exc_value))
+                        print(("%s: %s" % (exc_type, exc_value)), file=self.__stderr)
                     # Make sure that exc_tb gets deleted since it is a memory
                     # hog; deleting everything else is just for thoroughness
                     finally:
@@ -739,12 +740,12 @@ def activeCount():
 
 def enumerate():
     _active_limbo_lock.acquire()
-    active = _active.values() + _limbo.values()
+    active = list(_active.values()) + list(_limbo.values())
     _active_limbo_lock.release()
     return active
 
 try:
-    from thread import stack_size
+    from .thread import stack_size
     __all__.append('stack_size')
 except ImportError:
     pass
@@ -759,7 +760,7 @@ _shutdown = _MainThread()._exitfunc
 # module, or from the python fallback
 
 try:
-    from thread import _local as local
+    from .thread import _local as local
 except ImportError:
     from _threading_local import local
 
@@ -826,7 +827,7 @@ def _test():
         def run(self):
             while self.count > 0:
                 item = self.queue.get()
-                print item
+                print(item)
                 self.count = self.count - 1
 
     NP = 3

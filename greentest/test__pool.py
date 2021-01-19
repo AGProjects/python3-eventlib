@@ -37,7 +37,7 @@ class TestCoroutinePool(LimitedTestCase):
         done = pool.execute(consumer)
         pool.execute_async(producer)
         done.wait()
-        self.assertEquals(['cons1', 'prod', 'cons2'], results)
+        self.assertEqual(['cons1', 'prod', 'cons2'], results)
 
     def test_timer_cancel(self):
         # this test verifies that local timers are not fired 
@@ -51,7 +51,7 @@ class TestCoroutinePool(LimitedTestCase):
         worker = pool.execute(some_work)
         worker.wait()
         api.sleep(0)
-        self.assertEquals(timer_fired, [])
+        self.assertEqual(timer_fired, [])
 
     def test_reentrant(self):
         pool = self.klass(0,1)
@@ -118,7 +118,7 @@ class TestCoroutinePool(LimitedTestCase):
             api.sleep(0.1)
             return 'ok'
         pool.execute(slow)
-        self.assertEquals(pool.wait(), 'ok')
+        self.assertEqual(pool.wait(), 'ok')
         
     def test_pool_smash(self):
         # The premise is that a coroutine in a Pool tries to get a token out
@@ -139,7 +139,7 @@ class TestCoroutinePool(LimitedTestCase):
         # the execute makes the token pool expect that coroutine, but then
         # immediately cuts bait
         e1 = pool.execute(do_receive, tp)
-        self.assertEquals(e1.wait(), 'timed out')
+        self.assertEqual(e1.wait(), 'timed out')
 
         # the pool can get some random item back
         def send_wakeup(tp):
@@ -151,10 +151,10 @@ class TestCoroutinePool(LimitedTestCase):
         def resume():
             return 'resumed'
         e2 = pool.execute(resume)
-        self.assertEquals(e2.wait(), 'resumed')
+        self.assertEqual(e2.wait(), 'resumed')
 
         # we should be able to get out the thing we put in there, too
-        self.assertEquals(tp.get(), 'wakeup')
+        self.assertEqual(tp.get(), 'wakeup')
 
 
 class PoolBasicTests(LimitedTestCase):

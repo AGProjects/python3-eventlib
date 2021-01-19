@@ -52,14 +52,14 @@ def wait_on_children():
             event = CHILD_EVENTS.pop(child_pobj, None)
             if event:
                 event.send(code)
-        except OSError, e:
+        except OSError as e:
             if e[0] == errno.ECHILD:
-                print "already dead"
+                print("already dead")
                 # Already dead; signal, but assume success
                 event = CHILD_EVENTS.pop(child_pobj, None)
                 event.send(0)
             else:
-                print "raising"
+                print("raising")
                 raise e
 
     CHILD_POBJS = unclosed_pobjs
@@ -139,7 +139,7 @@ class Process(object):
         try:
             written = self.child_stdin.write(stuff)
             self.child_stdin.flush()
-        except ValueError, e:
+        except ValueError as e:
             ## File was closed
             assert str(e) == 'I/O operation on closed file'
         if written == 0:

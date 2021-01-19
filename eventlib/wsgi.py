@@ -117,7 +117,7 @@ class HttpProtocol(BaseHTTPServer.BaseHTTPRequestHandler):
                     "HTTP/1.0 414 Request URI Too Long\r\nConnection: close\r\nContent-length: 0\r\n\r\n")
                 self.close_connection = 1
                 return
-        except socket.error, e:
+        except socket.error as e:
             if e[0] != errno.EBADF:
                 raise
             self.raw_requestline = ''
@@ -135,7 +135,7 @@ class HttpProtocol(BaseHTTPServer.BaseHTTPRequestHandler):
             self.server.outstanding_requests += 1
             try:
                 self.handle_one_response()
-            except socket.error, e:
+            except socket.error as e:
                 # Broken pipe, connection reset by peer
                 if e[0] in (32, 54):
                     pass
@@ -193,7 +193,7 @@ class HttpProtocol(BaseHTTPServer.BaseHTTPRequestHandler):
                 _writelines(towrite)
                 length[0] = length[0] + sum(map(len, towrite))
             except UnicodeEncodeError:
-                print "Encountered unicode while attempting to write wsgi response: ", [x for x in towrite if isinstance(x, unicode)]
+                print("Encountered unicode while attempting to write wsgi response: ", [x for x in towrite if isinstance(x, str)])
                 traceback.print_exc()
                 _writelines(
                     ["HTTP/1.0 500 Internal Server Error\r\n",
@@ -209,7 +209,7 @@ class HttpProtocol(BaseHTTPServer.BaseHTTPRequestHandler):
                 try:
                     if headers_sent:
                         # Re-raise original exception if headers sent
-                        raise exc_info[0], exc_info[1], exc_info[2]
+                        raise exc_info[0](exc_info[1]).with_traceback(exc_info[2])
                 finally:
                     # Avoid dangling circular ref
                     exc_info = None
@@ -222,9 +222,9 @@ class HttpProtocol(BaseHTTPServer.BaseHTTPRequestHandler):
 
         try:
             result = self.application(self.environ, start_response)
-        except Exception, e:
+        except Exception as e:
             exc = ''.join(traceback.format_exception(*sys.exc_info()))
-            print exc
+            print(exc)
             if not headers_set:
                 start_response("500 Internal Server Error", [('Content-type', 'text/plain')])
                 write(exc)
@@ -244,9 +244,9 @@ class HttpProtocol(BaseHTTPServer.BaseHTTPRequestHandler):
                             if use_chunked and sum(map(len, towrite)) > self.minimum_chunk_size:
                                 write(''.join(towrite))
                                 del towrite[:]
-                except Exception, e:
+                except Exception as e:
                     exc = traceback.format_exc()
-                    print exc
+                    print(exc)
                     if not headers_set:
                         start_response("500 Internal Server Error", [('Content-type', 'text/plain')])
                         write(exc)
@@ -258,7 +258,7 @@ class HttpProtocol(BaseHTTPServer.BaseHTTPRequestHandler):
                     write('')
                 if use_chunked:
                     wfile.write('0\r\n\r\n')
-            except Exception, e:
+            except Exception as e:
                 traceback.print_exc()
         finally:
             if hasattr(result, 'close'):
@@ -285,7 +285,7 @@ class HttpProtocol(BaseHTTPServer.BaseHTTPRequestHandler):
             path, query = self.path.split('?', 1)
         else:
             path, query = self.path, ''
-        env['PATH_INFO'] = urllib.unquote(path)
+        env['PATH_INFO'] = urllib.parse.unquote(path)
         env['QUERY_STRING'] = query
 
         if self.headers.typeheader is None:
@@ -363,7 +363,8 @@ class Server(BaseHTTPServer.HTTPServer):
             d.update(self.environ)
         return d
 
-    def process_request(self, (socket, address)):
+    def process_request(self, xxx_todo_changeme):
+        (socket, address) = xxx_todo_changeme
         proto = self.protocol(socket, address, self)
         proto.handle()
 
@@ -390,23 +391,23 @@ def server(sock, site, log=None, environ=None, max_size=None, max_http_version=D
             if port == ':80':
                 port = ''
 
-        print "(%s) wsgi starting up on %s://%s%s/" % (os.getpid(), scheme, host, port)
+        print("(%s) wsgi starting up on %s://%s%s/" % (os.getpid(), scheme, host, port))
         while True:
             try:
                 try:
                     client_socket = sock.accept()
-                except socket.error, e:
+                except socket.error as e:
                     if e[0] != errno.EPIPE and e[0] != errno.EBADF:
                         raise
                 pool.execute_async(serv.process_request, client_socket)
             except KeyboardInterrupt:
                 api.get_hub().remove_descriptor(sock.fileno())
-                print "wsgi exiting"
+                print("wsgi exiting")
                 break
     finally:
         try:
             sock.close()
-        except socket.error, e:
+        except socket.error as e:
             if e[0] != errno.EPIPE:
                 raise
 

@@ -30,9 +30,9 @@ from eventlib import processes
 from greentest import find_command
 
 try:
-    from cStringIO import StringIO
+    from io import StringIO
 except ImportError:
-    from StringIO import StringIO
+    from io import StringIO
 
 
 def hello_world(env, start_response):
@@ -125,8 +125,8 @@ class TestHttpd(TestCase):
         result = fd.read()
         fd.close()
         ## The server responds with the maximum version it supports
-        self.assert_(result.startswith('HTTP'), result)
-        self.assert_(result.endswith('hello world'))
+        self.assertTrue(result.startswith('HTTP'), result)
+        self.assertTrue(result.endswith('hello world'))
 
     def test_002_keepalive(self):
         sock = api.connect_tcp(
@@ -169,7 +169,7 @@ class TestHttpd(TestCase):
         # ab is apachebench
         out = processes.Process(find_command('ab'),
                                 ['-c','64','-n','1024', '-k', url])
-        print out.read()
+        print(out.read())
 
     def test_006_reject_long_urls(self):
         sock = api.connect_tcp(
@@ -232,7 +232,7 @@ class TestHttpd(TestCase):
 
         fd = sock.makeGreenFile()
         fd.write('GET / HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n')
-        self.assert_('Transfer-Encoding: chunked' in fd.read())
+        self.assertTrue('Transfer-Encoding: chunked' in fd.read())
 
     def test_010_no_chunked_http_1_0(self):
         self.site.application = chunked_app
@@ -241,7 +241,7 @@ class TestHttpd(TestCase):
 
         fd = sock.makeGreenFile()
         fd.write('GET / HTTP/1.0\r\nHost: localhost\r\nConnection: close\r\n\r\n')
-        self.assert_('Transfer-Encoding: chunked' not in fd.read())
+        self.assertTrue('Transfer-Encoding: chunked' not in fd.read())
 
     def test_011_multiple_chunks(self):
         self.site.application = big_chunks
@@ -251,7 +251,7 @@ class TestHttpd(TestCase):
         fd = sock.makeGreenFile()
         fd.write('GET / HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n')
         headers = fd.readuntil('\r\n\r\n')
-        self.assert_('Transfer-Encoding: chunked' in headers)
+        self.assertTrue('Transfer-Encoding: chunked' in headers)
         chunks = 0
         chunklen = int(fd.readline(), 16)
         while chunklen:
@@ -259,7 +259,7 @@ class TestHttpd(TestCase):
             chunk = fd.read(chunklen)
             fd.readline()
             chunklen = int(fd.readline(), 16)
-        self.assert_(chunks > 1)
+        self.assertTrue(chunks > 1)
 
     def test_012_ssl_server(self):
         from eventlib import httpc
@@ -275,7 +275,7 @@ class TestHttpd(TestCase):
         api.spawn(wsgi.server, sock, wsgi_app)
 
         result = httpc.post("https://localhost:4201/foo", "abc")
-        self.assertEquals(result, 'abc')
+        self.assertEqual(result, 'abc')
 
     def test_013_empty_return(self):
         from eventlib import httpc
@@ -289,7 +289,7 @@ class TestHttpd(TestCase):
         api.spawn(wsgi.server, sock, wsgi_app)
 
         res = httpc.get("https://localhost:4202/foo")
-        self.assertEquals(res, '')
+        self.assertEqual(res, '')
 
 
 if __name__ == '__main__':

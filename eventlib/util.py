@@ -37,11 +37,11 @@ def g_log(*args):
         else:
             g_id = id(greenlet.getcurrent())
             if g_id < 0:
-                g_id += 1 + ((sys.maxint + 1) << 1)
+                g_id += 1 + ((sys.maxsize + 1) << 1)
             ident = '%08X' % (g_id,)
     else:
         ident = 'greenlet-%d' % (g_id,)
-    print >>sys.stderr, '[%s] %s' % (ident, ' '.join(map(str, args)))
+    print('[%s] %s' % (ident, ' '.join(map(str, args))), file=sys.stderr)
 
 
 __original_socket__ = socket.socket
@@ -77,7 +77,7 @@ def wrap_pipes_with_coroutine_pipes():
         from eventlib import api
         try:
             api.trampoline(fd, read=True)
-        except socket.error, e:
+        except socket.error as e:
             if e[0] == errno.EPIPE:
                 return ''
             else:

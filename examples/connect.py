@@ -34,13 +34,13 @@ def geturl(url):
     c = socket.socket()
     ip = socket.gethostbyname(url)
     c.connect((ip, 80))
-    print '%s connected' % url
+    print('%s connected' % url)
     c.send('GET /\r\n\r\n')
     return c.recv(1024)
 
 urls = ['www.google.com', 'www.yandex.ru', 'www.python.org', 'ag-projects.com', 'sylkserver.com']
 jobs = [proc.spawn(geturl, x) for x in urls]
-print 'spawned %s jobs' % len(jobs)
+print('spawned %s jobs' % len(jobs))
 
 # collect the results from workers
 results = proc.waitall(jobs)
@@ -48,5 +48,5 @@ results = proc.waitall(jobs)
 # unless trap_errors argument specifies otherwise
 
 for url, result in zip(urls, results):
-    print '%s: %s' % (url, repr(result)[:50])
+    print('%s: %s' % (url, repr(result)[:50]))
 

@@ -230,7 +230,7 @@ class UnbufferedTransport(GreenTransportBase):
     def __iter__(self):
         return self
 
-    def next(self):
+    def __next__(self):
         result = self.recv()
         if not result:
             raise StopIteration
@@ -297,7 +297,7 @@ class GreenTransport(GreenTransportBase):
     def __iter__(self):
         return self
 
-    def next(self):
+    def __next__(self):
         res = self.recv()
         if not res:
             raise StopIteration

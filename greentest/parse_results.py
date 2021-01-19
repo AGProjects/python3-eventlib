@@ -66,7 +66,7 @@ def parse_unittest_output(s):
         fail = int(fail or '0')
         error = int(error or '0')
     else:
-        assert ok_match, `s`
+        assert ok_match, repr(s)
     timeout_match = re.search('^===disabled because of timeout: (\d+)$', s, re.M)
     if timeout_match:
         timeout = int(timeout_match.group(1))
@@ -108,10 +108,10 @@ def main(db):
         except Exception:
             parse_error += 1
             sys.stderr.write('Failed to parse id=%s\n' % id)
-            print repr(stdout)
+            print(repr(stdout))
             traceback.print_exc()
         else:
-            print id, hub, testname, runs, errors, fails, timeouts
+            print(id, hub, testname, runs, errors, fails, timeouts)
             c.execute('insert into parsed_command_record '
                       '(id, testname, hub, runs, errors, fails, timeouts) '
                       'values (?, ?, ?, ?, ?, ?, ?)',
@@ -121,8 +121,8 @@ def main(db):
 if __name__=='__main__':
     if not sys.argv[1:]:
         latest_db = sorted(glob.glob('results.*.db'), key=lambda f: os.stat(f).st_mtime)[-1]
-        print latest_db
+        print(latest_db)
         sys.argv.append(latest_db)
     for db in sys.argv[1:]:
         main(db)
-    execfile('generate_report.py')
+    exec(compile(open('generate_report.py', "rb").read(), 'generate_report.py', 'exec'))

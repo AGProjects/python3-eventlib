@@ -26,7 +26,7 @@ _g_debug = False
 
 def prnt(msg):
     if _g_debug:
-        print msg
+        print(msg)
 
 class yadda(object):
     def __init__(self):
@@ -103,18 +103,18 @@ class TestTpool(TestCase):
     def test_wrap_dict(self):
         my_object = {'a':1}
         prox = tpool.Proxy(my_object)
-        self.assertEqual('a', prox.keys()[0])
+        self.assertEqual('a', list(prox.keys())[0])
         self.assertEqual(1, prox['a'])
         self.assertEqual(str(my_object), str(prox))
         self.assertEqual(repr(my_object), repr(prox))
-        self.assertEqual(`my_object`, `prox`)
+        self.assertEqual(repr(my_object), repr(prox))
 
     def test_wrap_module_class(self):
         prox = tpool.Proxy(uuid)
         self.assertEqual(tpool.Proxy, type(prox))
         id = prox.uuid4()
         self.assertEqual(id.get_version(), uuid.uuid4().get_version())
-        self.assert_(repr(prox.uuid4))
+        self.assertTrue(repr(prox.uuid4))
 
     def test_wrap_eq(self):
         prox = tpool.Proxy(uuid)
@@ -122,14 +122,14 @@ class TestTpool(TestCase):
         id2 = prox.UUID(str(id1))
         self.assertEqual(id1, id2)
         id3 = prox.uuid4()
-        self.assert_(id1 != id3)
+        self.assertTrue(id1 != id3)
 
     def test_wrap_nonzero(self):
         prox = tpool.Proxy(uuid)
         id1 = prox.uuid4()
-        self.assert_(bool(id1))
+        self.assertTrue(bool(id1))
         prox2 = tpool.Proxy([1, 2, 3])
-        self.assert_(bool(prox2))
+        self.assertTrue(bool(prox2))
 
     def test_multiple_wraps(self):
         prox1 = tpool.Proxy(uuid)
@@ -155,7 +155,7 @@ class TestTpool(TestCase):
         self.assertRaises(AttributeError, nofunc)
 
     def assertLessThan(self, a, b):
-        self.assert_(a < b, "%s is not less than %s" % (a, b))
+        self.assertTrue(a < b, "%s is not less than %s" % (a, b))
 
     def test_variable_and_keyword_arguments_with_function_calls(self):
         import optparse
@@ -170,9 +170,9 @@ class TestTpool(TestCase):
 
         pool = coros.CoroutinePool(max_size=4)
         waiters = []
-        waiters.append(pool.execute(lambda: self.assertEquals(prox.one, 1)))
-        waiters.append(pool.execute(lambda: self.assertEquals(prox.two, 2)))
-        waiters.append(pool.execute(lambda: self.assertEquals(prox.three, 3)))
+        waiters.append(pool.execute(lambda: self.assertEqual(prox.one, 1)))
+        waiters.append(pool.execute(lambda: self.assertEqual(prox.two, 2)))
+        waiters.append(pool.execute(lambda: self.assertEqual(prox.three, 3)))
         for waiter in waiters:
             waiter.wait()
 
@@ -187,14 +187,14 @@ class TestTpool(TestCase):
         """ Benchmark computing the amount of overhead tpool adds to function calls.  Rename to activate."""
         iterations = 10000
         def bench(f, *args, **kw):
-            for i in xrange(iterations):
+            for i in range(iterations):
                 f(*args, **kw)
         def noop():
             pass
 
         normal_results = []
         tpool_results = []
-        for i in xrange(3):
+        for i in range(3):
             start = time.time()
             bench(noop)
             end = time.time()
@@ -208,8 +208,8 @@ class TestTpool(TestCase):
         avg_normal = sum(normal_results)/len(normal_results)
         avg_tpool =  sum(tpool_results)/len(tpool_results)
         tpool_overhead = (avg_tpool-avg_normal)/iterations
-        print "%s iterations\nTpool overhead is %s seconds per call.  Normal: %s; Tpool: %s" % (
-            iterations, tpool_overhead, normal_results, tpool_results)
+        print("%s iterations\nTpool overhead is %s seconds per call.  Normal: %s; Tpool: %s" % (
+            iterations, tpool_overhead, normal_results, tpool_results))
 
 
 if __name__ == '__main__':
