@@ -1,13 +1,13 @@
 Source: python-eventlib
 Section: python
 Priority: optional
-Maintainer: Dan Pascu <dan@ag-projects.com>
-Build-Depends: debhelper (>= 11), dh-python, python-all (>= 2.7)
+Maintainer: Adrian Georgescu <ag@ag-projects.com>
+Build-Depends: debhelper (>= 11), dh-python, python3
 Standards-Version: 4.5.0
 
-Package: python-eventlib
+Package: python3-eventlib
 Architecture: all
-Depends: ${python:Depends}, ${misc:Depends}, python-greenlet
+Depends: ${python3:Depends}, ${misc:Depends}, python3-greenlet
 Description: Eventlib is a networking library written in Python.
  It achieves high scalability by using non-blocking I/O while at the same
  time retaining high programmer usability by using coroutines to make the

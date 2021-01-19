@@ -1,3 +1,9 @@
+python-eventlib (0.3.0) unstable; urgency=medium
+
+  * Migrate to version 3
+
+ -- Adrian Georgescu <ag@ag-projects.com>  Wed, 13 Jan 2021 15:10:18 +0100
+
 python-eventlib (0.2.5) unstable; urgency=medium
 
   * Simplified keeping version number
