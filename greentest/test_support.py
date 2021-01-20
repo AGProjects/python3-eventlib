@@ -115,7 +115,7 @@ def bind_port(sock, host='', preferred_port=54321):
             (err, msg) = error.args
             if err != errno.EADDRINUSE:
                 raise
-            print('  WARNING: failed to listen on port %d, trying another' % port, file=sys.__stderr__)
+            print('  WARNING: failed to listen on port %d, trying another' % port)
     raise TestFailed('unable to find port to listen on')
 
 FUZZ = 1e-6
@@ -275,7 +275,8 @@ def open_urlresource(url):
             return open(fn)
 
     requires('urlfetch')
-    print('\tfetching %s ...' % url, file=get_original_stdout())
+    #print('\tfetching %s ...' % url, file=get_original_stdout())
+    print('\tfetching %s ...' % url)
     fn, _ = urllib.request.urlretrieve(url, filename)
     return open(fn)
 

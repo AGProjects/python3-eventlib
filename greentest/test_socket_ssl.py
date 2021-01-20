@@ -23,7 +23,7 @@ def test_basic():
     socket.RAND_add("this is a random string", 75.0)
 
     try:
-        f = urllib.request.urlopen('https://sf.net')
+        f = urllib.urlopen('https://sf.net')
     except IOError as exc:
         if exc.errno == errno.ETIMEDOUT:
             raise test_support.ResourceDenied('HTTPS connection is timing out')
@@ -40,7 +40,7 @@ def test_timeout():
     WARNING:  an attempt to connect to %r %s, in
     test_timeout.  That may be legitimate, but is not the outcome we hoped
     for.  If this message is seen often, test_timeout should be changed to
-    use a more reliable address.""" % (ADDR, extra_msg), file=sys.stderr)
+    use a more reliable address.""" % (ADDR, extra_msg))
 
     if test_support.verbose:
         print("test_timeout ...")

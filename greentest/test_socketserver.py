@@ -166,7 +166,7 @@ class ForgivingTCPServer(TCPServer):
                 (err, msg) = error.args
                 if err != errno.EADDRINUSE:
                     raise
-                print('  WARNING: failed to listen on port %d, trying another' % port, file=sys.__stderr__)
+                print('  WARNING: failed to listen on port %d, trying another' % port)
 
 tcpservers = [ForgivingTCPServer, ThreadingTCPServer]
 if hasattr(os, 'fork') and os.name not in ('os2',):
