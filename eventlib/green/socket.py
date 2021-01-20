@@ -1,10 +1,11 @@
 import socket as __socket
-from socket import (__all__, error, AF_INET, SOCK_STREAM, SOL_SOCKET, SO_REUSEADDR, getdefaulttimeout, gethostname, getnameinfo, getservbyname, herror, htonl, SOCK_DGRAM, timeout, gaierror, SOCK_RAW, setdefaulttimeout, getservbyport, gethostbyaddr, ntohl, htons, ntohs, getfqdn, SOCK_RDM, SOCK_SEQPACKET)
+from socket import (__all__, error, AF_INET, AF_UNIX, SOCK_STREAM, SOL_SOCKET, SO_REUSEADDR, getdefaulttimeout, gethostname, getnameinfo, getservbyname, herror, htonl, SOCK_DGRAM, timeout, gaierror, SOCK_RAW, setdefaulttimeout, getservbyport, gethostbyaddr, ntohl, htons, ntohs, getfqdn, SOCK_RDM, SOCK_SEQPACKET)
 
 from eventlib.api import get_hub
 from eventlib.greenio import GreenSocket as socket
 from eventlib.greenio import socketpair, fromfd
 from socket import SocketIO
+from ssl import SSLError as sslerror
 
 import warnings
 
@@ -98,12 +99,10 @@ else:
                                     SSL_ERROR_EOF,
                                     SSL_ERROR_INVALID_ERROR_CODE)
     try:
-        sslerror = __socket.sslerror
-        __socket.ssl
         def ssl(sock, certificate=None, private_key=None):
             warnings.warn("socket.ssl() is deprecated. Use ssl.wrap_socket() instead.", DeprecationWarning, stacklevel=2)
             return ssl_module.sslwrap_simple(sock, private_key, certificate)
-    except AttributeError:
+    except AttributeError as e:
         # if the real socket module doesn't have the ssl method or sslerror
         # exception, we don't emulate them
         pass

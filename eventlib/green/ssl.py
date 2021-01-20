@@ -1,6 +1,6 @@
 import ssl as __ssl
 from ssl import _ssl
-from _ssl import ( RAND_add, RAND_status, SSL_ERROR_ZERO_RETURN, SSL_ERROR_WANT_READ, SSL_ERROR_WANT_WRITE, SSL_ERROR_WANT_X509_LOOKUP, SSL_ERROR_SYSCALL, SSL_ERROR_SSL, SSL_ERROR_WANT_CONNECT, SSL_ERROR_EOF, SSL_ERROR_INVALID_ERROR_CODE, SSLError )
+from _ssl import ( CERT_NONE, PROTOCOL_TLS, RAND_add, RAND_status, SSL_ERROR_ZERO_RETURN, SSL_ERROR_WANT_READ, SSL_ERROR_WANT_WRITE, SSL_ERROR_WANT_X509_LOOKUP, SSL_ERROR_SYSCALL, SSL_ERROR_SSL, SSL_ERROR_WANT_CONNECT, SSL_ERROR_EOF, SSL_ERROR_INVALID_ERROR_CODE, SSLError )
 
 time = __import__('time')
 from eventlib.api import trampoline
@@ -247,15 +247,14 @@ def wrap_socket(sock, *a, **kw):
     return GreenSSLSocket(sock, *a, **kw)
 
 
-if hasattr(__ssl, 'sslwrap_simple'):
-    def sslwrap_simple(sock, keyfile=None, certfile=None):
-        """A replacement for the old socket.ssl function.  Designed
-        for compability with Python 2.5 and earlier.  Will disappear in
-        Python 3.0."""
-        ssl_sock = GreenSSLSocket(sock, keyfile=keyfile, certfile=certfile,
-                                  server_side=False,
-                                  cert_reqs=CERT_NONE,
-                                  ssl_version=PROTOCOL_SSLv23,
-                                  do_handshake_on_connect=False,
-                                  ca_certs=None)
-        return ssl_sock
+def sslwrap_simple(sock, keyfile=None, certfile=None):
+    """A replacement for the old socket.ssl function.  Designed
+    for compability with Python 2.5 and earlier.  Will disappear in
+    Python 3.0."""
+    ssl_sock = GreenSSLSocket(sock, keyfile=keyfile, certfile=certfile,
+                              server_side=False,
+                              cert_reqs=CERT_NONE,
+                              ssl_version=PROTOCOL_TLS,
+                              do_handshake_on_connect=False,
+                              ca_certs=None)
+    return ssl_sock
