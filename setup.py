@@ -11,7 +11,7 @@ def find_packages(toplevel):
 
 
 setup(
-    name='python-eventlib',
+    name='python3-eventlib',
     version=__version__,
 
     description='Coroutine-based networking library',
@@ -20,6 +20,7 @@ setup(
     author='Linden Lab',
     maintainer="AG Projects",
     maintainer_email="support@ag-projects.com",
+    author_email="support@ag-projects.com",
 
     classifiers=[
         "License :: OSI Approved :: MIT License",
