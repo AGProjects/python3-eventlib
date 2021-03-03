@@ -10,7 +10,7 @@ python3 setup.py sdist
 cd dist
 tar zxvf *.tar.gz
 
-cd python-eventlib-?.?.?
+cd python3-eventlib-?.?.?
 
 debuild --no-sign
 

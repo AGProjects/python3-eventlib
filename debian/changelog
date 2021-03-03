@@ -1,4 +1,4 @@
-python-eventlib (0.3.0) unstable; urgency=medium
+python3-eventlib (0.3.0) unstable; urgency=medium
 
   * Migrate to version 3
 

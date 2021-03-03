@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 import os
 
@@ -15,7 +15,7 @@ setup(
     version=__version__,
 
     description='Coroutine-based networking library',
-    url='http://devel.ag-projects.com/repositories/python-eventlib',
+    url='http://devel.ag-projects.com/repositories/python3-eventlib',
 
     author='Linden Lab',
     maintainer="AG Projects",

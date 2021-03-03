@@ -1,4 +1,4 @@
-Source: python-eventlib
+Source: python3-eventlib
 Section: python
 Priority: optional
 Maintainer: Adrian Georgescu <ag@ag-projects.com>
