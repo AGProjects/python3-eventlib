@@ -362,7 +362,7 @@ def with_timeout(seconds, func, *args, **kwds):
     func
       the callable to execute with a timeout; must be one of the functions
       that implicitly or explicitly yields
-    \*args, \*\*kwds
+    *args, **kwds
       (positional, keyword) arguments to pass to *func*
     timeout_value=
       value to return if timeout occurs (default raise ``TimeoutError``)
