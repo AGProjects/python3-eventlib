@@ -389,6 +389,13 @@ class GreenSocket(object):
     def gettimeout(self):
         return self.timeout
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc):
+        self.close()
+        return False
+
 def read(self, size=None):
     if size is not None and not isinstance(size, int):
         raise TypeError('Expecting an int or long for size, got %s: %s' % (type(size), repr(size)))
