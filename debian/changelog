@@ -1,3 +1,12 @@
+python3-eventlib (0.3.1) unstable; urgency=medium
+
+  * Fix missing context manager protocol in GreenSocket for dnspython 2.7.0+
+  * Fixed popen2 in python3
+  * Fixed syntax warnings
+  * Handle failing to import AF_UNIX on Windows
+
+ -- Tijmen de Mes <tijmen@ag-projects.com>  Fri, 23 Jan 2026 15:51:08 +0100
+
 python3-eventlib (0.3.0) unstable; urgency=medium
 
   * Migrate to version 3
