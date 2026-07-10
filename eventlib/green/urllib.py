@@ -7,7 +7,12 @@ from eventlib.green import socket, time
 from urllib.error import( __all__ )
 from urllib.response import( __all__ )
 from urllib.robotparser import( __all__ )
-from urllib.request import( __all__, __version__, MAXFTPCACHE, ftpcache, ftpwrapper, _noheaders, noheaders, proxy_bypass, addinfourl, url2pathname, getproxies)
+try:
+    from urllib.request import( __all__, __version__, MAXFTPCACHE, ftpcache, ftpwrapper, _noheaders, noheaders, proxy_bypass, addinfourl, url2pathname, getproxies)
+except ImportError:
+    from urllib.request import( __all__, __version__, ftpwrapper, _noheaders, noheaders, proxy_bypass, addinfourl, url2pathname, getproxies)
+    MAXFTPCACHE = 10
+    ftpcache = {}
 from urllib.parse import( __all__,  quote, unwrap, unquote, splithost, splituser, splittype, splitattr, splitpasswd, splitport, splitquery, splitvalue)
 from urllib.parse import urljoin as basejoin
 
@@ -41,7 +46,16 @@ def urlcleanup():
         _urlopener.cleanup()
 
 
-class URLopener(urllib.request.URLopener):
+try:
+    _URLopener = urllib.request.URLopener
+    _FancyURLopener = urllib.request.FancyURLopener
+except AttributeError:
+    class _URLopener(object):
+        def __init__(self, *args, **kwargs): pass
+    class _FancyURLopener(_URLopener):
+        pass
+
+class URLopener(_URLopener):
 
     def open_http(self, url, data=None):
         """Use HTTP protocol."""
