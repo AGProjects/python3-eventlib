@@ -1,3 +1,9 @@
+python3-eventlib (0.3.2) unstable; urgency=medium
+
+  * Add watchdog reporting stalls of the hub thread with the stack of the blocking code
+
+ -- Tijmen de Mes <support@ag-projects.com>  Thu, 01 Oct 2026 14:58:22 +0200
+
 python3-eventlib (0.3.1) unstable; urgency=medium
 
   * Fix missing context manager protocol in GreenSocket for dnspython 2.7.0+
